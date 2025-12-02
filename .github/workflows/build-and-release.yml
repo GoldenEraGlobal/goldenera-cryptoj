@@ -1,0 +1,154 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-java:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "maven"
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Upload JAR artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-artifacts
+          path: |
+            target/*.jar
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-java
+    # Run only on push to main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write # Required for creating GitHub Releases
+      packages: write # Required for publishing to GitHub Packages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          server-id: github
+
+      - name: Extract Version from pom.xml
+        id: extract_version
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Extracted version: $VERSION"
+
+      - name: Download JAR Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-artifacts
+          path: target/
+
+      - name: Find Main JAR File
+        id: find_jar
+        run: |
+          # Find the main JAR (exclude sources and javadoc)
+          JAR_FILE=$(find target/ -type f -name "goldenera-cryptoj-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
+
+          if [ -z "$JAR_FILE" ]; then
+            echo "❌ Error: No main JAR file found!"
+            exit 1
+          fi
+
+          echo "Found JAR file: $JAR_FILE"
+          echo "jar_file=$JAR_FILE" >> $GITHUB_ENV
+
+          JAR_BASENAME=$(basename "$JAR_FILE")
+          echo "jar_basename=$JAR_BASENAME" >> $GITHUB_ENV
+
+      - name: Generate Release Notes
+        run: |
+          cat > RELEASE_NOTES.md << 'EOF'
+          # goldenera-cryptoj v${{ env.VERSION }}
+
+          ## Installation
+
+          Add to your Maven project:
+
+          ```xml
+          <dependency>
+              <groupId>global.goldenera.cryptoj</groupId>
+              <artifactId>goldenera-cryptoj</artifactId>
+              <version>${{ env.VERSION }}</version>
+          </dependency>
+          ```
+
+          Ensure you have the GitHub Package registry configured in your `pom.xml`.
+
+          EOF
+
+      - name: Check if release exists
+        id: check_release
+        run: |
+          if gh release view "v${{ env.VERSION }}" > /dev/null 2>&1; then
+            echo "release_exists=true" >> $GITHUB_ENV
+            echo "⚠️ Release v${{ env.VERSION }} already exists"
+          else
+            echo "release_exists=false" >> $GITHUB_ENV
+            echo "✅ Release v${{ env.VERSION }} does not exist yet"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Delete existing release if it exists
+        if: env.release_exists == 'true'
+        run: |
+          echo "Deleting existing release v${{ env.VERSION }}"
+          gh release delete "v${{ env.VERSION }}" --yes --cleanup-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "v${{ env.VERSION }}" \
+            --title "goldenera-cryptoj v${{ env.VERSION }}" \
+            --notes-file RELEASE_NOTES.md \
+            "${{ env.jar_file }}#goldenera-cryptoj.jar"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Publish to GitHub Packages
+        run: |
+          echo "🚀 Publishing JAR to GitHub Packages..."
+          mvn deploy:deploy-file \
+            -DgroupId=global.goldenera.cryptoj \
+            -DartifactId=goldenera-cryptoj \
+            -Dversion=${{ env.VERSION }} \
+            -Dpackaging=jar \
+            -Dfile=${{ env.jar_file }} \
+            -DpomFile=pom.xml \
+            -DrepositoryId=github \
+            -Durl=https://maven.pkg.github.com/goldeneraglobal/goldenera-cryptoj \
+            -Dusername=x-access-token \
+            -Dpassword=${{ secrets.GITHUB_TOKEN }} \
+            -DretryFailedDeploymentCount=3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
