@@ -13,6 +13,9 @@ on:
 jobs:
   build-java:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,9 +26,13 @@ jobs:
           distribution: "temurin"
           java-version: "21"
           cache: "maven"
+          server-id: github
+          settings-path: ${{ github.workspace }}
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload JAR artifacts
         uses: actions/upload-artifact@v4
@@ -41,8 +48,8 @@ jobs:
     # Run only on push to main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
-      contents: write # Required for creating GitHub Releases
-      packages: write # Required for publishing to GitHub Packages
+      contents: write
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,7 +77,6 @@ jobs:
       - name: Find Main JAR File
         id: find_jar
         run: |
-          # Find the main JAR (exclude sources and javadoc)
           JAR_FILE=$(find target/ -type f -name "goldenera-cryptoj-*.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
 
           if [ -z "$JAR_FILE" ]; then
@@ -102,7 +108,6 @@ jobs:
           ```
 
           Ensure you have the GitHub Package registry configured in your `pom.xml`.
-
           EOF
 
       - name: Check if release exists
