@@ -67,7 +67,6 @@ import lombok.NonNull;
  * Tx tx = TxBuilder.create()
  * 		.type(TxType.TRANSFER)
  * 		.network(Network.MAINNET)
- * 		.sender(myAddress)
  * 		.recipient(recipientAddress)
  * 		.amount(Wei.fromEth(1))
  * 		.fee(Wei.fromEth(0.001))
@@ -78,7 +77,6 @@ import lombok.NonNull;
  * Tx bipTx = TxBuilder.create()
  * 		.type(TxType.BIP_CREATE)
  * 		.network(Network.TESTNET)
- * 		.sender(myAddress)
  * 		.fee(Wei.fromEth(0.01))
  * 		.nonce(2L)
  * 		.payload(tokenMintPayload)
@@ -95,7 +93,6 @@ public class TxBuilder {
 	private Instant timestamp;
 	private TxType type;
 	private Network network;
-	private Address sender;
 	private Long nonce;
 	private Address recipient;
 	private Wei amount;
@@ -174,29 +171,6 @@ public class TxBuilder {
 	 */
 	public TxBuilder network(@NonNull Network network) {
 		this.network = network;
-		return this;
-	}
-
-	/**
-	 * Sets the sender address.
-	 * Required field.
-	 * 
-	 * @param sender sender's address
-	 * @return this builder for chaining
-	 */
-	public TxBuilder sender(@NonNull Address sender) {
-		this.sender = sender;
-		return this;
-	}
-
-	/**
-	 * Sets the sender using a private key (derives the address automatically).
-	 * 
-	 * @param privateKey sender's private key
-	 * @return this builder for chaining
-	 */
-	public TxBuilder sender(@NonNull PrivateKey privateKey) {
-		this.sender = privateKey.getAddress();
 		return this;
 	}
 
@@ -330,7 +304,6 @@ public class TxBuilder {
 	 * 		.minerFee(Wei.fromEth(0.001))
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -357,7 +330,6 @@ public class TxBuilder {
 	 * 		.maxSupply(BigInteger.valueOf(1_000_000_000))
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -383,7 +355,6 @@ public class TxBuilder {
 	 * 		.minerFee(Wei.fromEth(0.001))
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -406,7 +377,6 @@ public class TxBuilder {
 	 * 		.approve(bipProposalHash)
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(authorityAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -431,7 +401,6 @@ public class TxBuilder {
 	 * 		.symbol("NEW")
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(ownerAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -454,7 +423,6 @@ public class TxBuilder {
 	 * 		.authority(newAuthorityAddress)
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(currentAuthorityAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -477,7 +445,6 @@ public class TxBuilder {
 	 * 		.authority(authorityToRemove)
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(currentAuthorityAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -501,7 +468,6 @@ public class TxBuilder {
 	 * 		.alias("myusername")
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -524,7 +490,6 @@ public class TxBuilder {
 	 * 		.alias("oldusername")
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -549,7 +514,6 @@ public class TxBuilder {
 	 * 		.minDifficulty(BigInteger.valueOf(1000))
 	 * 		.done()
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(authorityAddress)
 	 * 		.nonce(1L)
 	 * 		.sign(myKey);
 	 * }</pre>
@@ -571,9 +535,6 @@ public class TxBuilder {
 		}
 		if (network == null) {
 			throw new CryptoJException("Network is required");
-		}
-		if (sender == null) {
-			throw new CryptoJException("Sender address is required");
 		}
 		if (nonce == null) {
 			throw new CryptoJException("Nonce is required");
@@ -674,7 +635,6 @@ public class TxBuilder {
 	 * Tx signedTx = TxBuilder.create()
 	 * 		.type(TxType.TRANSFER)
 	 * 		.network(Network.MAINNET)
-	 * 		.sender(myKey)
 	 * 		.recipient(recipientAddress)
 	 * 		.amount(Wei.fromEth(1))
 	 * 		.fee(Wei.fromEth(0.001))
@@ -691,15 +651,6 @@ public class TxBuilder {
 	public Tx sign(@NonNull PrivateKey privateKey) throws CryptoJException {
 		// Build unsigned transaction first
 		Tx unsignedTx = buildUnsigned();
-
-		// Verify sender matches private key
-		Address derivedAddress = privateKey.getAddress();
-		if (!derivedAddress.equals(sender)) {
-			throw new CryptoJException(
-					String.format("Private key address (%s) does not match sender address (%s)",
-							derivedAddress.toChecksumAddress(),
-							sender.toChecksumAddress()));
-		}
 
 		// Compute transaction hash for signing (excludes signature field)
 		Hash txHashForSigning = TxUtil.hashForSigning(unsignedTx);

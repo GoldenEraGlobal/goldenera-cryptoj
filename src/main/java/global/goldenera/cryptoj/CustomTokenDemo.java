@@ -61,7 +61,6 @@ public class CustomTokenDemo {
 				.amount(Amounts.tokensDecimal("1"))
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(1L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);
@@ -84,7 +83,6 @@ public class CustomTokenDemo {
 				.amount(Amounts.tokensWithDecimals("100.50", 6)) // 100.50 USDC
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(1L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);
@@ -104,7 +102,6 @@ public class CustomTokenDemo {
 				.amount(Amounts.tokensWithDecimals("250.75", 6)) // Using constant
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(2L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);
@@ -125,7 +122,6 @@ public class CustomTokenDemo {
 				.amount(Amounts.tokensWithDecimals("0.5", 8)) // 0.5 WBTC
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(3L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);
@@ -150,7 +146,6 @@ public class CustomTokenDemo {
 				// OR: .amount(Amounts.tokensWithDecimals("1000.123456", Amounts.Decimals.DAI))
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(4L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);
@@ -173,7 +168,6 @@ public class CustomTokenDemo {
 				.amount(Amounts.tokensWithDecimals("500.12345", 9)) // 9 decimals
 				.done()
 				.network(Network.MAINNET)
-				.sender(sender)
 				.nonce(5L)
 				.fee(Amounts.tokensDecimal("0.001"))
 				.sign(senderKey);

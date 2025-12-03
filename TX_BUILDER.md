@@ -29,7 +29,6 @@ Address recipientAddress = Address.fromHexString("0x...");
 Tx tx = TxBuilder.create()
     .type(TxType.TRANSFER)
     .network(Network.MAINNET)
-    .sender(myKey)                      // Auto-derives address
     .recipient(recipientAddress)
     .amount(Amounts.tokensDecimal("1.5"))
     .fee(Amounts.Fees.STANDARD)
@@ -43,7 +42,6 @@ Tx tx = TxBuilder.create()
 Tx tx = TxBuilder.create()
     .type(TxType.TRANSFER)
     .network(Network.MAINNET)
-    .sender(myAddress)
     .recipient(recipientAddress)
     .amount(Amounts.tokensDecimal("0.5"))
     .fee(Amounts.Fees.STANDARD)
@@ -64,7 +62,6 @@ Tx tx = TxBuilder.create()
         .maxSupply(BigInteger.valueOf(1_000_000_000))
     .done()
     .network(Network.MAINNET)
-    .sender(myAddress)
     .nonce(3L)
     .fee(Amounts.Fees.BIP)
     .sign(myKey);
@@ -82,7 +79,6 @@ Tx tx = TxBuilder.create()
         .minerFee(Amounts.Fees.STANDARD)
     .done()
     .network(Network.MAINNET)
-    .sender(myAddress)
     .nonce(4L)
     .fee(Amounts.tokensDecimal("0.005"))
     .sign(myKey);
@@ -96,7 +92,6 @@ Tx tx = TxBuilder.create()
 TxBuilder builder = TxBuilder.create()
     .type(TxType.TRANSFER)
     .network(Network.MAINNET)
-    .sender(myAddress)
     .recipient(recipientAddress)
     .amount(Amounts.tokens(2))
     .nonce(5L);
@@ -120,7 +115,6 @@ Tx tx = builder.sign(myKey);
 Tx unsignedTx = TxBuilder.create()
     .type(TxType.TRANSFER)
     .network(Network.MAINNET)
-    .sender(myAddress)
     .recipient(recipientAddress)
     .amount(Amounts.tokens(5))
     .fee(Amounts.tokensDecimal("0.002"))
@@ -150,7 +144,6 @@ Instant customTime = Instant.parse("2025-01-01T00:00:00Z");
 Tx tx = TxBuilder.create()
     .type(TxType.TRANSFER)
     .network(Network.TESTNET)
-    .sender(myAddress)
     .recipient(recipientAddress)
     .amount(Amounts.tokens(1))
     .nonce(7L)
@@ -166,8 +159,6 @@ Tx tx = TxBuilder.create()
 |--------|-------------|---------|
 | `.type(TxType)` | Transaction type (TRANSFER, BIP_CREATE, etc.) | - |
 | `.network(Network)` | MAINNET or TESTNET | - |
-| `.sender(Address)` | Sender's address | - |
-| `.sender(PrivateKey)` | Sender's private key (auto-derives address) | - |
 | `.nonce(long)` | Account sequence number | - |
 
 ### Optional Fields
@@ -199,21 +190,14 @@ Tx tx = TxBuilder.create()
 `TxBuilder` automatically validates transactions based on type:
 
 ### TRANSFER
-- ✅ `sender` required
 - ✅ `recipient` required
 - ✅ `nonce` required
+- ✅ `amount` required
+- ✅ `fee` required
 
 ### BIP_CREATE / BIP_VOTE
-- ✅ `sender` required
 - ✅ `nonce` required
 - ✅ `payload` required
-
-### TOKEN_MINT / TOKEN_BURN
-- ✅ `sender` required
-- ✅ `nonce` required
-- ✅ `tokenAddress` required
-- ✅ `payload` required
-- ✅ `referenceHash` required (via `.forProposal()`)
 
 ## Error Handling
 
@@ -222,7 +206,6 @@ try {
     Tx tx = TxBuilder.create()
         .type(TxType.TRANSFER)
         .network(Network.MAINNET)
-        .sender(myAddress)
         // Missing recipient!
         .nonce(1L)
         .sign(myKey);
@@ -238,7 +221,6 @@ try {
 |-------|-------|
 | `Transaction type is required` | Missing `.type()` |
 | `Network is required` | Missing `.network()` |
-| `Sender address is required` | Missing `.sender()` |
 | `Nonce is required` | Missing `.nonce()` |
 | `Recipient is required for TRANSFER` | Transfer without recipient |
 | `Payload is required for BIP_CREATE` | BIP transaction without payload |
@@ -331,7 +313,6 @@ public class Wallet {
         Tx tx = TxBuilder.create()
             .type(TxType.TRANSFER)
             .network(Network.MAINNET)
-            .sender(privateKey)
             .recipient(to)
             .amount(amount)
             .fee(calculateFee(amount))
