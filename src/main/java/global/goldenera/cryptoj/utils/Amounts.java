@@ -46,9 +46,9 @@ import lombok.experimental.UtilityClass;
 public class Amounts {
 
 	/**
-	 * Standard number of decimals for native token (8, like Bitcoin).
+	 * Standard number of decimals for native token
 	 */
-	public static final int STANDARD_DECIMALS = 8;
+	public static final int STANDARD_DECIMALS = 9;
 
 	/**
 	 * Maximum number of decimals supported (18).
@@ -191,8 +191,8 @@ public class Amounts {
 	 * Common token decimal constants.
 	 */
 	public static class Decimals {
-		/** Standard token decimals (8, like Bitcoin) */
-		public static final int STANDARD = 8;
+		/** Standard token decimals */
+		public static final int STANDARD = 9;
 
 		/** Maximum supported decimals */
 		public static final int MAX = 18;
