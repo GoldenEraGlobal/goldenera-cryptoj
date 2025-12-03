@@ -45,6 +45,7 @@ import lombok.NonNull;
  * 		.website("https://mytoken.io")
  * 		.logo("https://mytoken.io/logo.png")
  * 		.maxSupply(BigInteger.valueOf(1_000_000_000))
+ * 		.userBurnable(true)
  * 		.done()
  * 		.network(Network.MAINNET)
  * 		.sender(myAddress)
@@ -63,10 +64,12 @@ public class TokenCreateBuilder {
 	private String websiteUrl;
 	private String logoUrl;
 	private BigInteger maxSupply;
+	private boolean userBurnable;
 
 	public TokenCreateBuilder(TxBuilder parent) {
 		this.parent = parent;
 		this.numberOfDecimals = 18; // Default to 18 decimals (like ETH)
+		this.userBurnable = false; // Default to non-burnable
 	}
 
 	/**
@@ -138,6 +141,18 @@ public class TokenCreateBuilder {
 	}
 
 	/**
+	 * Sets whether users can burn this token (optional).
+	 * Default: false (only authority can burn)
+	 * 
+	 * @param userBurnable true if users can burn tokens, false otherwise
+	 * @return this builder for chaining
+	 */
+	public TokenCreateBuilder userBurnable(boolean userBurnable) {
+		this.userBurnable = userBurnable;
+		return this;
+	}
+
+	/**
 	 * Completes the token create payload configuration and returns to the parent
 	 * builder.
 	 * 
@@ -151,6 +166,7 @@ public class TokenCreateBuilder {
 				.websiteUrl(websiteUrl)
 				.logoUrl(logoUrl)
 				.maxSupply(maxSupply)
+				.userBurnable(userBurnable)
 				.build();
 
 		return parent.type(TxType.BIP_CREATE)
