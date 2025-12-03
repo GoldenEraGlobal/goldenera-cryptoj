@@ -29,6 +29,7 @@ import org.apache.tuweni.units.ethereum.Wei;
 
 import global.goldenera.cryptoj.builder.TxBuilder;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayloadImpl;
+import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.enums.TxType;
 
 /**
@@ -57,6 +58,7 @@ public class NetworkParamsBuilder {
 
 	private final TxBuilder parent;
 	private Wei blockReward;
+	private Address blockRewardPoolAddress;
 	private Long targetMiningTimeMs;
 	private Long asertHalfLifeBlocks;
 	private BigInteger minDifficulty;
@@ -75,6 +77,17 @@ public class NetworkParamsBuilder {
 	 */
 	public NetworkParamsBuilder blockReward(Wei blockReward) {
 		this.blockReward = blockReward;
+		return this;
+	}
+
+	/**
+	 * Sets the block reward pool address (optional).
+	 * 
+	 * @param blockRewardPoolAddress block reward pool address
+	 * @return this builder for chaining
+	 */
+	public NetworkParamsBuilder blockRewardPoolAddress(Address blockRewardPoolAddress) {
+		this.blockRewardPoolAddress = blockRewardPoolAddress;
 		return this;
 	}
 
@@ -130,6 +143,7 @@ public class NetworkParamsBuilder {
 	public TxBuilder done() {
 		TxBipNetworkParamsSetPayloadImpl payload = TxBipNetworkParamsSetPayloadImpl.builder()
 				.blockReward(blockReward)
+				.blockRewardPoolAddress(blockRewardPoolAddress)
 				.targetMiningTimeMs(targetMiningTimeMs)
 				.asertHalfLifeBlocks(asertHalfLifeBlocks)
 				.minDifficulty(minDifficulty)
