@@ -35,6 +35,8 @@ import lombok.Value;
 public class BlockImpl implements Block {
 
 	BlockHeader header;
+	// TXS can be null when loaded only header (for performance reasons) (when you
+	// load block with excludeTxs = true)
 	List<Tx> txs;
 
 	// --- Calculated Fields (Lazy Loaded) ---

@@ -31,6 +31,7 @@ import org.apache.tuweni.bytes.Bytes;
 import global.goldenera.cryptoj.common.payloads.TxPayload;
 import global.goldenera.cryptoj.enums.TxPayloadType;
 import global.goldenera.cryptoj.enums.TxVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAddressAliasAddEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAddressAliasRemoveEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAuthorityAddEncodingStrategy;
@@ -67,14 +68,14 @@ public class TxPayloadEncoder {
 			return null;
 
 		if (version == null) {
-			throw new IllegalArgumentException("Version cannot be null");
+			throw new CryptoJFailedException("Version cannot be null");
 		}
 
 		EncoderKey key = new EncoderKey(payload.getPayloadType(), version);
 		TxPayloadEncodingStrategy<T> strategy = (TxPayloadEncodingStrategy<T>) strategies.get(key);
 
 		if (strategy == null) {
-			throw new IllegalArgumentException(
+			throw new CryptoJFailedException(
 					String.format("No serializer found for Payload: %s and TxVersion: %s", payload.getPayloadType(),
 							version));
 		}

@@ -25,9 +25,12 @@ package global.goldenera.cryptoj.serialization.block;
 
 import java.util.EnumMap;
 import java.util.Map;
+
 import org.apache.tuweni.bytes.Bytes;
+
 import global.goldenera.cryptoj.common.Block;
 import global.goldenera.cryptoj.enums.BlockVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.block.impl.encoding.BlockV1EncodingStrategy;
 import global.goldenera.cryptoj.serialization.blockheader.BlockHeaderEncoder;
 import global.goldenera.rlp.RLP;
@@ -43,9 +46,21 @@ public class BlockEncoder {
 
 	public Bytes encode(Block block, boolean includeSignature) {
 		BlockVersion version = block.getHeader().getVersion();
+		if (version == null) {
+			throw new CryptoJFailedException("Block header must have a version");
+		}
+
+		if (block.getTxs() == null) {
+			throw new CryptoJFailedException("Block must have transactions");
+		}
+
+		if (block.getHeader() == null) {
+			throw new CryptoJFailedException("Block must have a header");
+		}
+
 		BlockEncodingStrategy strategy = strategies.get(version);
 		if (strategy == null) {
-			throw new IllegalArgumentException("Unsupported Block Version: " + version);
+			throw new CryptoJFailedException("Unsupported Block Version: " + version);
 		}
 		return RLP.encode(out -> {
 			out.startList();

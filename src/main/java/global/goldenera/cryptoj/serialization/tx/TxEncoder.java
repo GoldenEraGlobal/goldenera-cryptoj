@@ -30,6 +30,7 @@ import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.Tx;
 import global.goldenera.cryptoj.enums.TxVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.tx.impl.encoding.TxV1EncodingStrategy;
 import global.goldenera.rlp.RLP;
 
@@ -45,7 +46,7 @@ public class TxEncoder {
 	public Bytes encode(Tx tx, boolean includeSignature) {
 		TxEncodingStrategy strategy = strategies.get(tx.getVersion());
 		if (strategy == null) {
-			throw new IllegalArgumentException("Unsupported Transaction Version: " + tx.getVersion());
+			throw new CryptoJFailedException("Unsupported Transaction Version: " + tx.getVersion());
 		}
 		return RLP.encode(out -> {
 			out.startList();

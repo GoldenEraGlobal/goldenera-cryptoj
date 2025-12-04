@@ -23,6 +23,12 @@
  */
 package global.goldenera.cryptoj.datatypes;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.bytes.Bytes32;
 import org.apache.tuweni.bytes.DelegatingBytes32;
@@ -35,12 +41,6 @@ import org.web3j.utils.Numeric;
 
 import global.goldenera.cryptoj.exceptions.CryptoJException;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
-
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.Arrays;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Secure 32-byte wrapper for the secp256k1 private key.
@@ -71,7 +71,7 @@ public class PrivateKey extends DelegatingBytes32 {
 	 *
 	 * @param value 32-byte array.
 	 * @return PrivateKey.
-	 * @throws IllegalArgumentException if the key is invalid.
+	 * @throws CryptoJFailedException if the key is invalid.
 	 */
 	public static PrivateKey wrap(final Bytes value) {
 		checkArgument(value != null, "Bytes cannot be null");

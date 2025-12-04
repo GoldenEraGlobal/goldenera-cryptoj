@@ -31,6 +31,7 @@ import org.apache.tuweni.bytes.Bytes;
 import global.goldenera.cryptoj.common.Block;
 import global.goldenera.cryptoj.common.BlockHeader;
 import global.goldenera.cryptoj.enums.BlockVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.block.impl.decoding.BlockV1DecodingStrategy;
 import global.goldenera.cryptoj.serialization.blockheader.BlockHeaderDecoder;
 import global.goldenera.rlp.RLP;
@@ -45,9 +46,9 @@ public class BlockDecoder {
 		strategies.put(BlockVersion.V1, new BlockV1DecodingStrategy());
 	}
 
-	public Block decode(Bytes rlpBytes) {
+	public Block decode(Bytes rlpBytes, boolean excludeTxs) {
 		if (rlpBytes == null || rlpBytes.isEmpty()) {
-			throw new IllegalArgumentException("Cannot decode empty bytes");
+			throw new CryptoJFailedException("Cannot decode empty bytes");
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
@@ -57,9 +58,13 @@ public class BlockDecoder {
 		BlockVersion version = header.getVersion();
 		BlockDecodingStrategy strategy = strategies.get(version);
 		if (strategy == null)
-			throw new RuntimeException("Unknown block version");
-		Block block = strategy.decodeBody(input, header);
+			throw new CryptoJFailedException("Unknown block version");
+		Block block = strategy.decodeBody(input, header, excludeTxs);
 		input.leaveList();
 		return block;
+	}
+
+	public Block decode(Bytes rlpBytes) {
+		return decode(rlpBytes, false);
 	}
 }

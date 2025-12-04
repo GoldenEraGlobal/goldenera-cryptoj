@@ -31,6 +31,7 @@ import org.apache.tuweni.bytes.Bytes;
 import global.goldenera.cryptoj.common.payloads.TxPayload;
 import global.goldenera.cryptoj.enums.TxPayloadType;
 import global.goldenera.cryptoj.enums.TxVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxAddressAliasAddDecodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxAddressAliasRemoveDecodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxAuthorityAddDecodingStrategy;
@@ -106,21 +107,21 @@ public class TxPayloadDecoder {
 		}
 
 		if (version == null) {
-			throw new IllegalArgumentException("Version cannot be null");
+			throw new CryptoJFailedException("Version cannot be null");
 		}
 
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
 		int fields = input.enterList();
 		if (fields < 1) {
-			throw new IllegalArgumentException("Invalid RLP: Missing payload type field");
+			throw new CryptoJFailedException("Invalid RLP: Missing payload type field");
 		}
 		TxPayloadType type = TxPayloadType.fromCode(input.readIntScalar());
 		DecoderKey key = new DecoderKey(type, version);
 		TxPayloadDecodingStrategy<?> strategy = strategies.get(key);
 
 		if (strategy == null) {
-			throw new IllegalArgumentException(
+			throw new CryptoJFailedException(
 					"No payload decoder found for Type: " + type + " and Version: " + version);
 		}
 		TxPayload txPayload = strategy.decode(input);

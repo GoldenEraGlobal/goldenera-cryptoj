@@ -30,5 +30,5 @@ import global.goldenera.rlp.RLPInput;
 @FunctionalInterface
 public interface BlockDecodingStrategy {
 
-	Block decodeBody(RLPInput input, BlockHeader header);
+	Block decodeBody(RLPInput input, BlockHeader header, boolean excludeTxs);
 }

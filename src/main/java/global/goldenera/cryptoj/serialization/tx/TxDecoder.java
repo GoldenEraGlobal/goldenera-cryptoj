@@ -30,6 +30,7 @@ import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.Tx;
 import global.goldenera.cryptoj.enums.TxVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.tx.impl.decoding.TxV1DecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
@@ -45,18 +46,18 @@ public class TxDecoder {
 
 	public Tx decode(Bytes rlpBytes) {
 		if (rlpBytes == null || rlpBytes.isEmpty()) {
-			throw new IllegalArgumentException("Cannot decode empty bytes");
+			throw new CryptoJFailedException("Cannot decode empty bytes");
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
 		int fields = input.enterList();
 		if (fields < 1) {
-			throw new IllegalArgumentException("Invalid RLP: Missing version field");
+			throw new CryptoJFailedException("Invalid RLP: Missing version field");
 		}
 		TxVersion version = TxVersion.fromCode(input.readIntScalar());
 		TxDecodingStrategy strategy = strategies.get(version);
 		if (strategy == null) {
-			throw new IllegalArgumentException("Unsupported Tx Version: " + version);
+			throw new CryptoJFailedException("Unsupported Tx Version: " + version);
 		}
 		Tx tx = strategy.decode(input);
 		input.leaveList();

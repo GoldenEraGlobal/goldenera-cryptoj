@@ -26,6 +26,7 @@ package global.goldenera.cryptoj.utils;
 import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.Block;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.block.BlockEncoder;
 
 public class BlockUtil {
@@ -34,6 +35,9 @@ public class BlockUtil {
 	 * Returns the size of the block header + body in bytes.
 	 */
 	public static int size(Block block) {
+		if (block.getHeader() == null || block.getTxs() == null) {
+			throw new CryptoJFailedException("For block size calculation, block must have a header and transactions");
+		}
 		Bytes data = BlockEncoder.INSTANCE.encode(block, true);
 		return data.size();
 	}

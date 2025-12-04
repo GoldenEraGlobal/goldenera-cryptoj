@@ -30,6 +30,7 @@ import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.BlockHeader;
 import global.goldenera.cryptoj.enums.BlockVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.blockheader.impl.decoding.BlockHeaderV1DecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
@@ -45,19 +46,19 @@ public class BlockHeaderDecoder {
 
 	public BlockHeader decode(Bytes rlpBytes) {
 		if (rlpBytes == null || rlpBytes.isEmpty()) {
-			throw new IllegalArgumentException("Cannot decode empty bytes");
+			throw new CryptoJFailedException("Cannot decode empty bytes");
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
 		int fields = input.enterList();
 		if (fields < 1) {
-			throw new IllegalArgumentException("Invalid RLP: Missing version field");
+			throw new CryptoJFailedException("Invalid RLP: Missing version field");
 		}
 		BlockVersion version = BlockVersion.fromCode(input.readIntScalar());
 		BlockHeaderDecodingStrategy strategy = strategies.get(version);
 
 		if (strategy == null) {
-			throw new IllegalArgumentException("Unsupported Block Version: " + version);
+			throw new CryptoJFailedException("Unsupported Block Version: " + version);
 		}
 		BlockHeader blockHeader = strategy.decode(input);
 		input.leaveList();

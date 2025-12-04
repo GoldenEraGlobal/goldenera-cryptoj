@@ -27,6 +27,7 @@ import java.math.BigInteger;
 
 import org.apache.tuweni.units.ethereum.Wei;
 
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import lombok.experimental.UtilityClass;
 
 /**
@@ -160,7 +161,7 @@ public class Amounts {
 	 */
 	public static Wei tokensWithDecimals(String tokensDecimal, int decimals) {
 		if (decimals < 0 || decimals > MAX_DECIMALS) {
-			throw new IllegalArgumentException(
+			throw new CryptoJFailedException(
 					String.format("Decimals must be between 0 and %d, got: %d", MAX_DECIMALS, decimals));
 		}
 

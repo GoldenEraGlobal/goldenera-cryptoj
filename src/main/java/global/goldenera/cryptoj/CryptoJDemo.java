@@ -23,16 +23,15 @@
  */
 package global.goldenera.cryptoj;
 
+import java.security.Security;
+
 import org.apache.tuweni.bytes.Bytes;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.datatypes.Hash;
 import global.goldenera.cryptoj.datatypes.PrivateKey;
 import global.goldenera.cryptoj.datatypes.Signature;
-
-import java.security.Security;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class CryptoJDemo {
 

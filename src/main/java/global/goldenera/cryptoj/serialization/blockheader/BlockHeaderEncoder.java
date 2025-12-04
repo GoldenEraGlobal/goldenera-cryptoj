@@ -30,6 +30,7 @@ import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.BlockHeader;
 import global.goldenera.cryptoj.enums.BlockVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.blockheader.impl.encoding.BlockHeaderV1EncodingStrategy;
 import global.goldenera.rlp.RLP;
 
@@ -45,7 +46,7 @@ public class BlockHeaderEncoder {
 	public Bytes encode(BlockHeader block, boolean includeSignature) {
 		BlockHeaderEncodingStrategy strategy = strategies.get(block.getVersion());
 		if (strategy == null) {
-			throw new IllegalArgumentException("Unsupported Block Version: " + block.getVersion());
+			throw new CryptoJFailedException("Unsupported Block Version: " + block.getVersion());
 		}
 		return RLP.encode(out -> {
 			out.startList();

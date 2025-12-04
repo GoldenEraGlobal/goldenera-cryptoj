@@ -24,12 +24,15 @@
 package global.goldenera.cryptoj.common;
 
 import java.util.List;
+
 import global.goldenera.cryptoj.datatypes.Hash;
 
 public interface Block {
 
 	BlockHeader getHeader();
 
+	// TXS can be null when loaded only header (for performance reasons) (when you
+	// load block with excludeTxs = true)
 	List<Tx> getTxs();
 
 	// --- Convenience Delegates ---

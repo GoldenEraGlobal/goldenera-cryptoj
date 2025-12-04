@@ -39,15 +39,37 @@ import global.goldenera.rlp.RLPInput;
 public class BlockV1DecodingStrategy implements BlockDecodingStrategy {
 
 	@Override
-	public Block decodeBody(RLPInput input, BlockHeader header) {
-		List<Tx> txs = new ArrayList<>();
-		input.enterList();
-		while (!input.isEndOfCurrentList()) {
-			Bytes txBytes = input.readRaw();
-			txs.add(TxDecoder.INSTANCE.decode(txBytes));
-		}
-		input.leaveList();
-		return BlockImpl.builder().header(header).txs(txs).build();
-	}
+	public Block decodeBody(RLPInput input, BlockHeader header, boolean excludeTxs) {
+		// Enter the list and capture the item count to optimize list allocation
+		int txCount = input.enterList();
 
+		List<Tx> txs;
+
+		if (excludeTxs) {
+			// Optimization: If transactions are excluded, we set the list to null (or empty
+			// list if required by your logic)
+			// and simply skip the underlying RLP elements without allocating memory for
+			// Bytes.
+			txs = null;
+			while (!input.isEndOfCurrentList()) {
+				input.skipNext();
+			}
+		} else {
+			// Optimization: Pre-allocate the ArrayList to avoid internal array resizing
+			// overhead.
+			txs = new ArrayList<>(txCount);
+			while (!input.isEndOfCurrentList()) {
+				// We proceed to read and decode the transaction only if required.
+				Bytes txBytes = input.readRaw();
+				txs.add(TxDecoder.INSTANCE.decode(txBytes));
+			}
+		}
+
+		input.leaveList();
+
+		return BlockImpl.builder()
+				.header(header)
+				.txs(txs)
+				.build();
+	}
 }
