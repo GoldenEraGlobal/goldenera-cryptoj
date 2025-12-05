@@ -40,7 +40,7 @@ public class TxTokenCreateDecodingStrategy implements TxPayloadDecodingStrategy<
 		String websiteUrl = input.readOptionalString();
 		String logoUrl = input.readOptionalString();
 		BigInteger maxSupply = input.readOptionalBigIntegerScalar();
-		boolean userBurnable = input.readOptionalIntScalar() == 1;
+		boolean userBurnable = input.readIntScalar() == 1;
 
 		return TxBipTokenCreatePayloadImpl.builder()
 				.name(name)
