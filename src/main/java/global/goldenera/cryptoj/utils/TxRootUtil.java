@@ -25,48 +25,68 @@ package global.goldenera.cryptoj.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.tuweni.bytes.Bytes;
 
-import global.goldenera.cryptoj.datatypes.Hash;
 import global.goldenera.cryptoj.common.Tx;
-import lombok.NonNull;
+import global.goldenera.cryptoj.datatypes.Hash;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class TxRootUtil {
 
+	private static final int PARALLEL_THRESHOLD = 2048;
+
 	/**
-	 * Calculates Merkle Root using Bitcoin-style logic.
+	 * Calculates Merkle Root.
+	 * Assumes tx.getHash() is pre-calculated/cached (O(1) access).
 	 */
 	public static Hash txRootHash(List<? extends Tx> txs) {
 		if (txs == null || txs.isEmpty()) {
 			return Hash.ZERO;
 		}
+
 		int size = txs.size();
-		List<Hash> layer = new ArrayList<>(size);
+		List<Hash> currentLayer = new ArrayList<>(size);
 		for (Tx tx : txs) {
-			layer.add(TxUtil.hash(tx));
+			currentLayer.add(tx.getHash());
 		}
-		return buildMerkleTreeInPlace(layer);
+
+		return buildMerkleTree(currentLayer);
 	}
 
-	private static Hash buildMerkleTreeInPlace(@NonNull List<Hash> layer) {
-		int size = layer.size();
-		if (size == 0) {
-			return Hash.ZERO;
-		}
-
-		while (size > 1) {
-			int writeIndex = 0;
-			for (int i = 0; i < size; i += 2) {
-				Hash left = layer.get(i);
-				Hash right = (i + 1 < size) ? layer.get(i + 1) : left;
-				Bytes combined = Bytes.concatenate(left, right);
-				layer.set(writeIndex++, Hash.hash(combined));
-			}
-			size = writeIndex;
+	private static Hash buildMerkleTree(List<Hash> layer) {
+		while (layer.size() > 1) {
+			layer = calculateNextLayer(layer);
 		}
 		return layer.get(0);
+	}
+
+	private static List<Hash> calculateNextLayer(List<Hash> currentLayer) {
+		int size = currentLayer.size();
+		int nextSize = (size + 1) / 2;
+		boolean useParallel = size > PARALLEL_THRESHOLD;
+		IntStream indexStream = IntStream.range(0, nextSize);
+
+		if (useParallel) {
+			indexStream = indexStream.parallel();
+		}
+
+		return indexStream
+				.mapToObj(i -> {
+					int leftIndex = i * 2;
+					int rightIndex = leftIndex + 1;
+					Hash left = currentLayer.get(leftIndex);
+					Hash right = (rightIndex < size) ? currentLayer.get(rightIndex) : left;
+					return hashPair(left, right);
+				})
+				.collect(Collectors.toList());
+	}
+
+	private static Hash hashPair(Hash left, Hash right) {
+		Bytes combined = Bytes.concatenate(left, right);
+		return Hash.hash(combined);
 	}
 }
