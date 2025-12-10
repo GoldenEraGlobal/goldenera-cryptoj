@@ -36,5 +36,7 @@ public class TxNetworkParamsSetEncodingStrategy implements TxPayloadEncodingStra
 		out.writeOptionalLongScalar(payload.getTargetMiningTimeMs());
 		out.writeOptionalLongScalar(payload.getAsertHalfLifeBlocks());
 		out.writeOptionalBigIntegerScalar(payload.getMinDifficulty());
+		out.writeOptionalWeiScalar(payload.getMinTxBaseFee());
+		out.writeOptionalWeiScalar(payload.getMinTxByteFee());
 	}
 }

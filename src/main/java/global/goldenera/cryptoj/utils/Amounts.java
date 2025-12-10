@@ -49,7 +49,7 @@ public class Amounts {
 	/**
 	 * Standard number of decimals for native token
 	 */
-	public static final int STANDARD_DECIMALS = 9;
+	public static final int STANDARD_DECIMALS = 8;
 
 	/**
 	 * Maximum number of decimals supported (18).
@@ -193,9 +193,9 @@ public class Amounts {
 	 */
 	public static class Decimals {
 		/** Standard token decimals */
-		public static final int STANDARD = 9;
+		public static final int STANDARD = STANDARD_DECIMALS;
 
 		/** Maximum supported decimals */
-		public static final int MAX = 18;
+		public static final int MAX = MAX_DECIMALS;
 	}
 }

@@ -45,6 +45,8 @@ public class TxNetworkParamsSetDecodingStrategy implements TxPayloadDecodingStra
 		Long targetMiningTimeMs = input.readOptionalLongScalar();
 		Long asertHalfLifeBlocks = input.readOptionalLongScalar();
 		BigInteger minDifficulty = input.readOptionalBigIntegerScalar();
+		Wei minTxBaseFee = input.readOptionalWeiScalar();
+		Wei minTxByteFee = input.readOptionalWeiScalar();
 
 		return TxBipNetworkParamsSetPayloadImpl.builder()
 				.blockReward(blockReward)
@@ -52,6 +54,8 @@ public class TxNetworkParamsSetDecodingStrategy implements TxPayloadDecodingStra
 				.targetMiningTimeMs(targetMiningTimeMs)
 				.asertHalfLifeBlocks(asertHalfLifeBlocks)
 				.minDifficulty(minDifficulty)
+				.minTxBaseFee(minTxBaseFee)
+				.minTxByteFee(minTxByteFee)
 				.build();
 	}
 }
