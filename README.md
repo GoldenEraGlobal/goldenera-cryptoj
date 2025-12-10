@@ -18,7 +18,6 @@ This library enforces the following cryptographic and derivation standards, whic
 - **Addresses:** **20 bytes** derived from the last 20 bytes of `Keccak-256(pubkey)`, and encoded using **EIP-55 checksum**.
 - **Signatures:** **65-byte (r, s, v)** format, crucial for public key recovery (**ecrecover**).
 
-
 ---
 
 ## 🛠️ Library Usage (Demo)
