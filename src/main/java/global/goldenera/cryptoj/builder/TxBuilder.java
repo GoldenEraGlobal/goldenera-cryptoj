@@ -23,6 +23,7 @@
  */
 package global.goldenera.cryptoj.builder;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import org.apache.tuweni.bytes.Bytes;
@@ -209,7 +210,7 @@ public class TxBuilder {
 	 * @param amount amount in Wei
 	 * @return this builder for chaining
 	 */
-	public TxBuilder amount(@NonNull Wei amount) {
+	public TxBuilder amount(Wei amount) {
 		this.amount = amount;
 		return this;
 	}
@@ -235,7 +236,7 @@ public class TxBuilder {
 	 * @param message message bytes
 	 * @return this builder for chaining
 	 */
-	public TxBuilder message(@NonNull Bytes message) {
+	public TxBuilder message(Bytes message) {
 		this.message = message;
 		return this;
 	}
@@ -246,8 +247,12 @@ public class TxBuilder {
 	 * @param message message string
 	 * @return this builder for chaining
 	 */
-	public TxBuilder message(@NonNull String message) {
-		this.message = Bytes.wrap(message.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+	public TxBuilder message(String message) {
+		if (message == null) {
+			this.message = null;
+			return this;
+		}
+		this.message = Bytes.wrap(message.getBytes(StandardCharsets.UTF_8));
 		return this;
 	}
 
