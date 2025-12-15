@@ -70,4 +70,10 @@ public interface BlockHeader {
 	 * The implementation must cache this value.
 	 */
 	int getSize();
+
+	/**
+	 * Derived from the (v,r,s) signature using ecrecover.
+	 * The implementation must cache this value.
+	 */
+	Address getIdentity();
 }

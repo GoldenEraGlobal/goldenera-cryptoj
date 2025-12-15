@@ -30,6 +30,8 @@ import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.datatypes.Hash;
 import global.goldenera.cryptoj.datatypes.Signature;
 import global.goldenera.cryptoj.enums.BlockVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJException;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.utils.BlockHeaderUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,4 +60,16 @@ public class BlockHeaderImpl implements BlockHeader {
 
 	@Getter(lazy = true)
 	int size = BlockHeaderUtil.size(this);
+
+	@Getter(lazy = true)
+	Address identity = recoverIdentity();
+
+	private Address recoverIdentity() {
+		Hash hash = BlockHeaderUtil.hashForSigning(this);
+		try {
+			return signature.recoverAddress(hash);
+		} catch (CryptoJException e) {
+			throw new CryptoJFailedException("Failed to recover identity address", e);
+		}
+	}
 }
