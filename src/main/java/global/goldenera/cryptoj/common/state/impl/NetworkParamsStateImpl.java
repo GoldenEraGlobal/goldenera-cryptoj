@@ -70,6 +70,7 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 	Hash updatedByTxHash;
 
 	long currentAuthorityCount;
+	long currentValidatorCount;
 	long updatedAtBlockHeight;
 	Instant updatedAtTimestamp;
 
@@ -88,6 +89,27 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 		}
 		return this.toBuilder()
 				.currentAuthorityCount(this.currentAuthorityCount - 1)
+				.updatedByTxHash(txHash)
+				.updatedAtBlockHeight(blockHeight)
+				.updatedAtTimestamp(time)
+				.build();
+	}
+
+	public NetworkParamsStateImpl incrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
+		return this.toBuilder()
+				.currentValidatorCount(this.currentValidatorCount + 1)
+				.updatedByTxHash(txHash)
+				.updatedAtBlockHeight(blockHeight)
+				.updatedAtTimestamp(time)
+				.build();
+	}
+
+	public NetworkParamsStateImpl decrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
+		if (this.currentValidatorCount <= 0) {
+			throw new IllegalStateException("Cannot be less than 0");
+		}
+		return this.toBuilder()
+				.currentValidatorCount(this.currentValidatorCount - 1)
 				.updatedByTxHash(txHash)
 				.updatedAtBlockHeight(blockHeight)
 				.updatedAtTimestamp(time)

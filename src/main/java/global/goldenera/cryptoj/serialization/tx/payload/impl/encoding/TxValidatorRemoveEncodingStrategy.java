@@ -21,28 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.serialization.state.networkparams.impl;
+package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
 
-import global.goldenera.cryptoj.common.state.NetworkParamsState;
-import global.goldenera.cryptoj.serialization.state.networkparams.NetworkParamsStateEncodingStrategy;
+import global.goldenera.cryptoj.common.payloads.bip.TxBipValidatorRemovePayload;
+import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
 import global.goldenera.rlp.RLPOutput;
 
-public class NetworkParamsStateV1EncodingStrategy implements NetworkParamsStateEncodingStrategy {
+public class TxValidatorRemoveEncodingStrategy
+		implements TxPayloadEncodingStrategy<TxBipValidatorRemovePayload> {
 
 	@Override
-	public void encode(RLPOutput out, NetworkParamsState state) {
-		out.writeBigIntegerScalar(state.getBlockReward().toBigInteger());
-		out.writeBytes(state.getBlockRewardPoolAddress());
-		out.writeLongScalar(state.getTargetMiningTimeMs());
-		out.writeLongScalar(state.getAsertHalfLifeBlocks());
-		out.writeLongScalar(state.getAsertAnchorHeight());
-		out.writeBigIntegerScalar(state.getMinDifficulty());
-		out.writeBigIntegerScalar(state.getMinTxBaseFee().toBigInteger());
-		out.writeBigIntegerScalar(state.getMinTxByteFee().toBigInteger());
-		out.writeBytes32(state.getUpdatedByTxHash());
-		out.writeLongScalar(state.getCurrentAuthorityCount());
-		out.writeLongScalar(state.getCurrentValidatorCount());
-		out.writeLongScalar(state.getUpdatedAtBlockHeight());
-		out.writeLongScalar(state.getUpdatedAtTimestamp().toEpochMilli());
+	public void encode(RLPOutput out, TxBipValidatorRemovePayload payload) {
+		out.writeBytes(payload.getAddress());
 	}
 }

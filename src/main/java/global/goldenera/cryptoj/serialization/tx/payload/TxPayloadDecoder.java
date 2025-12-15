@@ -42,6 +42,8 @@ import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxTokenBu
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxTokenCreateDecodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxTokenMintDecodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxTokenUpdateDecodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxValidatorAddDecodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.decoding.TxValidatorRemoveDecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
 
@@ -98,6 +100,15 @@ public class TxPayloadDecoder {
 		register(
 				TxPayloadType.BIP_TOKEN_UPDATE,
 				new TxTokenUpdateDecodingStrategy(),
+				TxVersion.V1);
+		// Validator
+		register(
+				TxPayloadType.BIP_VALIDATOR_ADD,
+				new TxValidatorAddDecodingStrategy(),
+				TxVersion.V1);
+		register(
+				TxPayloadType.BIP_VALIDATOR_REMOVE,
+				new TxValidatorRemoveDecodingStrategy(),
 				TxVersion.V1);
 	}
 

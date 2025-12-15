@@ -23,93 +23,59 @@
  */
 package global.goldenera.cryptoj.builder.payloads;
 
-import org.apache.tuweni.units.ethereum.Wei;
-
 import global.goldenera.cryptoj.builder.TxBuilder;
-import global.goldenera.cryptoj.common.payloads.bip.TxBipTokenBurnPayloadImpl;
+import global.goldenera.cryptoj.common.payloads.bip.TxBipValidatorAddPayloadImpl;
 import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.enums.TxType;
 import lombok.NonNull;
 
 /**
- * Fluent builder for Token Burn payloads (BIP_CREATE transaction).
+ * Fluent builder for Validator Add payloads.
  * 
  * <p>
  * Example usage:
  * 
  * <pre>{@code
  * Tx tx = TxBuilder.create()
- * 		.tokenBurn()
- * 		.token(tokenAddress)
- * 		.from(holderAddress)
- * 		.amount(Amounts.tokens(100))
- * 		.minerFee(Amounts.tokensDecimal("0.001"))
+ * 		.addValidator()
+ * 		.validator(validatorAddress)
  * 		.done()
  * 		.network(Network.MAINNET)
  * 		.nonce(1L)
- * 		.fee(Amounts.tokensDecimal("0.005"))
  * 		.sign(myKey);
  * }</pre>
  * 
  * @author GoldenEra CryptoJ Team
  */
-public class TokenBurnBuilder {
+public class ValidatorAddBuilder {
 
 	private final TxBuilder parent;
-	private Address tokenAddress;
-	private Address sender;
-	private Wei amount;
+	private Address validator;
 
-	public TokenBurnBuilder(TxBuilder parent) {
+	public ValidatorAddBuilder(TxBuilder parent) {
 		this.parent = parent;
-		this.amount = Wei.ZERO;
 	}
 
 	/**
-	 * Sets the token contract address to burn from.
+	 * Sets the address to add as a validator.
 	 * 
-	 * @param tokenAddress token contract address
+	 * @param validator the validator address
 	 * @return this builder for chaining
 	 */
-	public TokenBurnBuilder token(@NonNull Address tokenAddress) {
-		this.tokenAddress = tokenAddress;
+	public ValidatorAddBuilder validator(@NonNull Address validator) {
+		this.validator = validator;
 		return this;
 	}
 
 	/**
-	 * Sets the address from which tokens will be burned.
-	 * 
-	 * @param sender holder's address
-	 * @return this builder for chaining
-	 */
-	public TokenBurnBuilder from(@NonNull Address sender) {
-		this.sender = sender;
-		return this;
-	}
-
-	/**
-	 * Sets the amount of tokens to burn.
-	 * 
-	 * @param amount amount in Wei
-	 * @return this builder for chaining
-	 */
-	public TokenBurnBuilder amount(@NonNull Wei amount) {
-		this.amount = amount;
-		return this;
-	}
-
-	/**
-	 * Completes the token burn payload configuration and returns to the parent
+	 * Completes the validator add payload configuration and returns to the parent
 	 * builder.
-	 * Creates a BIP_CREATE transaction with token burn payload.
 	 * 
 	 * @return parent TxBuilder for continued configuration
 	 */
 	public TxBuilder done() {
-		TxBipTokenBurnPayloadImpl payload = TxBipTokenBurnPayloadImpl.builder()
-				.tokenAddress(tokenAddress)
-				.sender(sender)
-				.amount(amount)
+		TxBipValidatorAddPayloadImpl payload = TxBipValidatorAddPayloadImpl.builder()
+				.address(validator)
 				.build();
 
 		return parent.type(TxType.BIP_CREATE)

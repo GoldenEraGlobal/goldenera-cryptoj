@@ -45,7 +45,6 @@ import lombok.NonNull;
  * 		.logo("https://newsite.com/logo.png") // Optional
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(ownerAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

@@ -52,6 +52,7 @@ public class NetworkParamsStateV1DecodingStrategy implements NetworkParamsStateD
 		Wei minTxByteFee = Wei.valueOf(input.readBigIntegerScalar());
 		Hash updatedByTxHash = Hash.wrap(input.readBytes32());
 		long currentAuthorityCount = input.readLongScalar();
+		long currentValidatorCount = input.readLongScalar();
 		long updatedAtBlockHeight = input.readLongScalar();
 		Instant updatedAtTimestamp = Instant.ofEpochMilli(input.readLongScalar());
 
@@ -67,6 +68,7 @@ public class NetworkParamsStateV1DecodingStrategy implements NetworkParamsStateD
 				.minTxByteFee(minTxByteFee)
 				.updatedByTxHash(updatedByTxHash)
 				.currentAuthorityCount(currentAuthorityCount)
+				.currentValidatorCount(currentValidatorCount)
 				.updatedAtBlockHeight(updatedAtBlockHeight)
 				.updatedAtTimestamp(updatedAtTimestamp)
 				.build();

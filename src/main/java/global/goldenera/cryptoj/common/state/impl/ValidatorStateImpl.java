@@ -21,48 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.common.state;
+package global.goldenera.cryptoj.common.state.impl;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
-
-import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.common.state.ValidatorState;
 import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
+import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
+import lombok.Builder;
+import lombok.Value;
 
-public interface NetworkParamsState {
+@Value
+@Builder(toBuilder = true)
+public class ValidatorStateImpl implements ValidatorState {
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+	public static final ValidatorState ZERO = ValidatorStateImpl.builder()
+			.version(ValidatorStateVersion.getLatest())
+			.createdAtBlockHeight(Long.MIN_VALUE)
+			.createdAtTimestamp(Instant.EPOCH)
+			.originTxHash(Hash.ZERO)
+			.build();
 
-	NetworkParamsStateVersion getVersion();
-
-	Wei getBlockReward();
-
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
+	ValidatorStateVersion version;
+	long createdAtBlockHeight;
+	Instant createdAtTimestamp;
+	Hash originTxHash;
 }

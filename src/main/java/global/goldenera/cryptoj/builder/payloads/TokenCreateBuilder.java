@@ -48,7 +48,6 @@ import lombok.NonNull;
  * 		.userBurnable(true)
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(myAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

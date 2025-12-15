@@ -21,48 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.common.state;
+package global.goldenera.cryptoj.common.payloads.bip;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
+import static lombok.AccessLevel.PRIVATE;
 
 import global.goldenera.cryptoj.datatypes.Address;
-import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
+import global.goldenera.cryptoj.enums.TxPayloadType;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
-public interface NetworkParamsState {
+@Data
+@Builder
+@FieldDefaults(level = PRIVATE)
+public class TxBipValidatorRemovePayloadImpl implements TxBipValidatorRemovePayload {
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+	Address address;
 
-	NetworkParamsStateVersion getVersion();
-
-	Wei getBlockReward();
-
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
+	@Override
+	public TxPayloadType getPayloadType() {
+		return TxPayloadType.BIP_VALIDATOR_REMOVE;
+	}
 }

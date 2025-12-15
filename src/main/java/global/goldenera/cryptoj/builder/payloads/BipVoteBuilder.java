@@ -56,7 +56,6 @@ import lombok.NonNull;
  * 		.disapprove(bipProposalHash)
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(authorityAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

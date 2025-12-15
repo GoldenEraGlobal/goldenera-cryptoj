@@ -21,48 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.common.state;
+package global.goldenera.cryptoj.serialization.state.validator;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import global.goldenera.cryptoj.common.state.ValidatorState;
+import global.goldenera.rlp.RLPInput;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
+@FunctionalInterface
+public interface ValidatorStateDecodingStrategy {
 
-import global.goldenera.cryptoj.datatypes.Address;
-import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
-
-public interface NetworkParamsState {
-
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
-
-	NetworkParamsStateVersion getVersion();
-
-	Wei getBlockReward();
-
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
+	ValidatorState decode(RLPInput input);
 }

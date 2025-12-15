@@ -46,7 +46,6 @@ import lombok.NonNull;
  * 		.minerFee(Amounts.tokensDecimal("0.001"))
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(myAddress)
  * 		.nonce(1L)
  * 		.fee(Amounts.tokensDecimal("0.005"))
  * 		.sign(myKey);

@@ -39,6 +39,8 @@ import global.goldenera.cryptoj.builder.payloads.TokenBurnBuilder;
 import global.goldenera.cryptoj.builder.payloads.TokenCreateBuilder;
 import global.goldenera.cryptoj.builder.payloads.TokenMintBuilder;
 import global.goldenera.cryptoj.builder.payloads.TokenUpdateBuilder;
+import global.goldenera.cryptoj.builder.payloads.ValidatorAddBuilder;
+import global.goldenera.cryptoj.builder.payloads.ValidatorRemoveBuilder;
 import global.goldenera.cryptoj.common.Tx;
 import global.goldenera.cryptoj.common.TxImpl;
 import global.goldenera.cryptoj.common.payloads.TxPayload;
@@ -458,6 +460,50 @@ public class TxBuilder {
 	 */
 	public AuthorityRemoveBuilder removeAuthority() {
 		return new AuthorityRemoveBuilder(this);
+	}
+
+	/**
+	 * Starts building an Add Validator transaction.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>{@code
+	 * Tx tx = TxBuilder.create()
+	 * 		.addValidator()
+	 * 		.validator(newValidatorAddress)
+	 * 		.done()
+	 * 		.network(Network.MAINNET)
+	 * 		.nonce(1L)
+	 * 		.sign(myKey);
+	 * }</pre>
+	 * 
+	 * @return ValidatorAddBuilder for adding validators
+	 */
+	public ValidatorAddBuilder addValidator() {
+		return new ValidatorAddBuilder(this);
+	}
+
+	/**
+	 * Starts building a Remove Validator transaction.
+	 * 
+	 * <p>
+	 * Example:
+	 * 
+	 * <pre>{@code
+	 * Tx tx = TxBuilder.create()
+	 * 		.removeValidator()
+	 * 		.validator(validatorToRemove)
+	 * 		.done()
+	 * 		.network(Network.MAINNET)
+	 * 		.nonce(1L)
+	 * 		.sign(myKey);
+	 * }</pre>
+	 * 
+	 * @return ValidatorRemoveBuilder for removing validators
+	 */
+	public ValidatorRemoveBuilder removeValidator() {
+		return new ValidatorRemoveBuilder(this);
 	}
 
 	/**

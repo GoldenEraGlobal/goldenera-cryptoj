@@ -23,93 +23,59 @@
  */
 package global.goldenera.cryptoj.builder.payloads;
 
-import org.apache.tuweni.units.ethereum.Wei;
-
 import global.goldenera.cryptoj.builder.TxBuilder;
-import global.goldenera.cryptoj.common.payloads.bip.TxBipTokenBurnPayloadImpl;
+import global.goldenera.cryptoj.common.payloads.bip.TxBipValidatorRemovePayloadImpl;
 import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.enums.TxType;
 import lombok.NonNull;
 
 /**
- * Fluent builder for Token Burn payloads (BIP_CREATE transaction).
+ * Fluent builder for Authority Remove payloads.
  * 
  * <p>
  * Example usage:
  * 
  * <pre>{@code
  * Tx tx = TxBuilder.create()
- * 		.tokenBurn()
- * 		.token(tokenAddress)
- * 		.from(holderAddress)
- * 		.amount(Amounts.tokens(100))
- * 		.minerFee(Amounts.tokensDecimal("0.001"))
+ * 		.removeValidator()
+ * 		.validator(validatorAddress)
  * 		.done()
  * 		.network(Network.MAINNET)
  * 		.nonce(1L)
- * 		.fee(Amounts.tokensDecimal("0.005"))
  * 		.sign(myKey);
  * }</pre>
  * 
  * @author GoldenEra CryptoJ Team
  */
-public class TokenBurnBuilder {
+public class ValidatorRemoveBuilder {
 
 	private final TxBuilder parent;
-	private Address tokenAddress;
-	private Address sender;
-	private Wei amount;
+	private Address validator;
 
-	public TokenBurnBuilder(TxBuilder parent) {
+	public ValidatorRemoveBuilder(TxBuilder parent) {
 		this.parent = parent;
-		this.amount = Wei.ZERO;
 	}
 
 	/**
-	 * Sets the token contract address to burn from.
+	 * Sets the validator address to remove.
 	 * 
-	 * @param tokenAddress token contract address
+	 * @param validator the validator address to remove
 	 * @return this builder for chaining
 	 */
-	public TokenBurnBuilder token(@NonNull Address tokenAddress) {
-		this.tokenAddress = tokenAddress;
+	public ValidatorRemoveBuilder validator(@NonNull Address validator) {
+		this.validator = validator;
 		return this;
 	}
 
 	/**
-	 * Sets the address from which tokens will be burned.
-	 * 
-	 * @param sender holder's address
-	 * @return this builder for chaining
-	 */
-	public TokenBurnBuilder from(@NonNull Address sender) {
-		this.sender = sender;
-		return this;
-	}
-
-	/**
-	 * Sets the amount of tokens to burn.
-	 * 
-	 * @param amount amount in Wei
-	 * @return this builder for chaining
-	 */
-	public TokenBurnBuilder amount(@NonNull Wei amount) {
-		this.amount = amount;
-		return this;
-	}
-
-	/**
-	 * Completes the token burn payload configuration and returns to the parent
-	 * builder.
-	 * Creates a BIP_CREATE transaction with token burn payload.
+	 * Completes the validator remove payload configuration and returns to the
+	 * parent builder.
 	 * 
 	 * @return parent TxBuilder for continued configuration
 	 */
 	public TxBuilder done() {
-		TxBipTokenBurnPayloadImpl payload = TxBipTokenBurnPayloadImpl.builder()
-				.tokenAddress(tokenAddress)
-				.sender(sender)
-				.amount(amount)
+		TxBipValidatorRemovePayloadImpl payload = TxBipValidatorRemovePayloadImpl.builder()
+				.address(validator)
 				.build();
 
 		return parent.type(TxType.BIP_CREATE)

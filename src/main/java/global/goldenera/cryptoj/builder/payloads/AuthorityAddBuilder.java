@@ -41,7 +41,6 @@ import lombok.NonNull;
  * 		.authority(authorityAddress)
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(currentAuthorityAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

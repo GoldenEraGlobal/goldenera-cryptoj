@@ -42,6 +42,8 @@ import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenBu
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenCreateEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenMintEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenUpdateEncodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorAddEncodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorRemoveEncodingStrategy;
 import global.goldenera.rlp.RLP;
 
 public class TxPayloadEncoder {
@@ -60,6 +62,8 @@ public class TxPayloadEncoder {
 		register(TxPayloadType.BIP_TOKEN_BURN, new TxTokenBurnEncodingStrategy(), TxVersion.V1);
 		register(TxPayloadType.BIP_NETWORK_PARAMS_SET, new TxNetworkParamsSetEncodingStrategy(), TxVersion.V1);
 		register(TxPayloadType.BIP_VOTE, new TxBipVoteEncodingStrategy(), TxVersion.V1);
+		register(TxPayloadType.BIP_VALIDATOR_ADD, new TxValidatorAddEncodingStrategy(), TxVersion.V1);
+		register(TxPayloadType.BIP_VALIDATOR_REMOVE, new TxValidatorRemoveEncodingStrategy(), TxVersion.V1);
 	}
 
 	@SuppressWarnings("unchecked")

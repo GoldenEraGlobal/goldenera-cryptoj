@@ -47,7 +47,6 @@ import global.goldenera.cryptoj.enums.TxType;
  * 		.minDifficulty(BigInteger.valueOf(1000))
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(authorityAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

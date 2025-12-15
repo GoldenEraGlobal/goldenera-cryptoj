@@ -23,46 +23,24 @@
  */
 package global.goldenera.cryptoj.common.state;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
-
-import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
+import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 
-public interface NetworkParamsState {
+public interface ValidatorState {
+	ValidatorStateVersion getVersion();
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+	long getCreatedAtBlockHeight();
 
-	NetworkParamsStateVersion getVersion();
+	Instant getCreatedAtTimestamp();
 
-	Wei getBlockReward();
+	Hash getOriginTxHash();
 
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
+	/**
+	 * Checks if this address is registered as a validator.
+	 */
+	default boolean exists() {
+		return getCreatedAtBlockHeight() != Long.MIN_VALUE;
+	}
 }

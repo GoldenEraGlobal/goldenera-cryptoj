@@ -40,7 +40,6 @@ import lombok.NonNull;
  * 		.alias("myalias")
  * 		.done()
  * 		.network(Network.MAINNET)
- * 		.sender(myAddress)
  * 		.nonce(1L)
  * 		.sign(myKey);
  * }</pre>

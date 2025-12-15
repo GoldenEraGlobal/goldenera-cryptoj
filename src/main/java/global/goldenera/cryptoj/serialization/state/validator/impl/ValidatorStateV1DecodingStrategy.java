@@ -21,48 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.common.state;
+package global.goldenera.cryptoj.serialization.state.validator.impl;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
-
-import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.common.state.ValidatorState;
+import global.goldenera.cryptoj.common.state.impl.ValidatorStateImpl;
 import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
+import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
+import global.goldenera.cryptoj.serialization.state.validator.ValidatorStateDecodingStrategy;
+import global.goldenera.rlp.RLPInput;
 
-public interface NetworkParamsState {
+public class ValidatorStateV1DecodingStrategy implements ValidatorStateDecodingStrategy {
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+	private static final ValidatorStateVersion VERSION = ValidatorStateVersion.V1;
 
-	NetworkParamsStateVersion getVersion();
+	@Override
+	public ValidatorState decode(RLPInput input) {
+		long createdAtBlockHeight = input.readLongScalar();
+		Long createdAtTimestampMillis = input.readOptionalLongScalar();
+		Instant createdAtTimestamp = createdAtTimestampMillis != null
+				? Instant.ofEpochMilli(createdAtTimestampMillis)
+				: null;
+		Hash originTxHash = Hash.wrap(input.readBytes32());
 
-	Wei getBlockReward();
+		return ValidatorStateImpl.builder()
+				.version(VERSION)
+				.createdAtBlockHeight(createdAtBlockHeight)
+				.createdAtTimestamp(createdAtTimestamp)
+				.originTxHash(originTxHash)
+				.build();
+	}
 
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
 }

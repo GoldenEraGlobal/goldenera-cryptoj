@@ -21,48 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.common.state;
+package global.goldenera.cryptoj.enums.state;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import static lombok.AccessLevel.PRIVATE;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.ethereum.Wei;
+import java.util.Arrays;
+import java.util.Comparator;
 
-import global.goldenera.cryptoj.datatypes.Address;
-import global.goldenera.cryptoj.datatypes.Hash;
-import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
-public interface NetworkParamsState {
+@AllArgsConstructor
+@Getter
+@FieldDefaults(level = PRIVATE, makeFinal = true)
+public enum ValidatorStateVersion {
+	V1(1);
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+	int code;
 
-	NetworkParamsStateVersion getVersion();
+	public static ValidatorStateVersion fromCode(int code) {
+		for (ValidatorStateVersion version : values()) {
+			if (version.getCode() == code) {
+				return version;
+			}
+		}
+		throw new CryptoJFailedException("Unknown ValidatorStateVersion code: " + code);
+	}
 
-	Wei getBlockReward();
-
-	Address getBlockRewardPoolAddress();
-
-	long getTargetMiningTimeMs();
-
-	long getAsertHalfLifeBlocks();
-
-	long getAsertAnchorHeight();
-
-	BigInteger getMinDifficulty();
-
-	Wei getMinTxBaseFee();
-
-	Wei getMinTxByteFee();
-
-	Hash getUpdatedByTxHash();
-
-	long getCurrentAuthorityCount();
-
-	long getCurrentValidatorCount();
-
-	long getUpdatedAtBlockHeight();
-
-	Instant getUpdatedAtTimestamp();
+	/**
+	 * Returns the version with the highest code value (logically the newest).
+	 */
+	public static ValidatorStateVersion getLatest() {
+		return Arrays.stream(values())
+				.max(Comparator.comparingInt(ValidatorStateVersion::getCode))
+				.orElseThrow(() -> new CryptoJFailedException("No ValidatorStateVersion defined"));
+	}
 }
