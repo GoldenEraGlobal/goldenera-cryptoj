@@ -65,6 +65,9 @@ public class BlockHeaderImpl implements BlockHeader {
 	Address identity = recoverIdentity();
 
 	private Address recoverIdentity() {
+		if (signature == null) {
+			return null;
+		}
 		Hash hash = BlockHeaderUtil.hashForSigning(this);
 		try {
 			return signature.recoverAddress(hash);
