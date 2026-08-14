@@ -32,6 +32,7 @@ import global.goldenera.cryptoj.common.state.ValidatorState;
 import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.validator.impl.ValidatorStateV1EncodingStrategy;
+import global.goldenera.cryptoj.serialization.state.validator.impl.ValidatorStateV2EncodingStrategy;
 import global.goldenera.rlp.RLP;
 
 public class ValidatorStateEncoder {
@@ -42,6 +43,7 @@ public class ValidatorStateEncoder {
 
 	private ValidatorStateEncoder() {
 		strategies.put(ValidatorStateVersion.V1, new ValidatorStateV1EncodingStrategy());
+		strategies.put(ValidatorStateVersion.V2, new ValidatorStateV2EncodingStrategy());
 	}
 
 	public Bytes encode(ValidatorState state) {

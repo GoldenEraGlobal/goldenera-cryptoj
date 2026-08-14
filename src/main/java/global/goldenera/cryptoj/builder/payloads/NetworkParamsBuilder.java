@@ -28,9 +28,11 @@ import java.math.BigInteger;
 import org.apache.tuweni.units.ethereum.Wei;
 
 import global.goldenera.cryptoj.builder.TxBuilder;
+import global.goldenera.cryptoj.common.MiningConsensusRules;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayloadImpl;
 import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.enums.TxType;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 
 /**
  * Fluent builder for Network Parameters Set payloads.
@@ -63,6 +65,8 @@ public class NetworkParamsBuilder {
 	private BigInteger minDifficulty;
 	private Wei minTxBaseFee;
 	private Wei minTxByteFee;
+	private Long validatorMiningWindowBlocks;
+	private boolean legacyV1;
 
 	public NetworkParamsBuilder(TxBuilder parent) {
 		this.parent = parent;
@@ -133,6 +137,24 @@ public class NetworkParamsBuilder {
 		return this;
 	}
 
+	public NetworkParamsBuilder validatorMiningWindowBlocks(long validatorMiningWindowBlocks) {
+		if (legacyV1) {
+			throw new IllegalStateException("Legacy V1 network params payload cannot contain a mining window");
+		}
+		MiningConsensusRules.validateWindowSize(validatorMiningWindowBlocks);
+		this.validatorMiningWindowBlocks = validatorMiningWindowBlocks;
+		return this;
+	}
+
+	/** Explicitly opts into the historical, implicit V1 wire format. */
+	public NetworkParamsBuilder legacyV1() {
+		if (validatorMiningWindowBlocks != null) {
+			throw new IllegalStateException("Legacy V1 network params payload cannot contain a mining window");
+		}
+		this.legacyV1 = true;
+		return this;
+	}
+
 	/**
 	 * Completes the network params payload configuration and returns to the parent
 	 * builder.
@@ -141,6 +163,7 @@ public class NetworkParamsBuilder {
 	 */
 	public TxBuilder done() {
 		TxBipNetworkParamsSetPayloadImpl payload = TxBipNetworkParamsSetPayloadImpl.builder()
+				.payloadVersion(legacyV1 ? TxPayloadVersion.V1 : TxPayloadVersion.V2)
 				.blockReward(blockReward)
 				.blockRewardPoolAddress(blockRewardPoolAddress)
 				.targetMiningTimeMs(targetMiningTimeMs)
@@ -148,6 +171,7 @@ public class NetworkParamsBuilder {
 				.minDifficulty(minDifficulty)
 				.minTxBaseFee(minTxBaseFee)
 				.minTxByteFee(minTxByteFee)
+				.validatorMiningWindowBlocks(validatorMiningWindowBlocks)
 				.build();
 
 		return parent.type(TxType.BIP_CREATE)

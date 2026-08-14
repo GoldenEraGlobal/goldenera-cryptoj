@@ -31,6 +31,7 @@ import org.apache.tuweni.units.ethereum.Wei;
 
 import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.enums.TxPayloadType;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -40,6 +41,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = PRIVATE)
 public class TxBipNetworkParamsSetPayloadImpl implements TxBipNetworkParamsSetPayload {
 
+	@Builder.Default
+	TxPayloadVersion payloadVersion = TxPayloadVersion.V1;
 	Wei blockReward;
 	Address blockRewardPoolAddress;
 	Long targetMiningTimeMs;
@@ -47,6 +50,7 @@ public class TxBipNetworkParamsSetPayloadImpl implements TxBipNetworkParamsSetPa
 	BigInteger minDifficulty;
 	Wei minTxBaseFee;
 	Wei minTxByteFee;
+	Long validatorMiningWindowBlocks;
 
 	@Override
 	public TxPayloadType getPayloadType() {

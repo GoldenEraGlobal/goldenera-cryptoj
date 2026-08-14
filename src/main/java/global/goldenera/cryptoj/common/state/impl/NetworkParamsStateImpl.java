@@ -41,7 +41,7 @@ import lombok.Value;
 public class NetworkParamsStateImpl implements NetworkParamsState {
 
 	public static final NetworkParamsState ZERO = NetworkParamsStateImpl.builder()
-			.version(NetworkParamsStateVersion.getLatest())
+			.version(NetworkParamsStateVersion.V1)
 			.blockReward(Wei.ZERO)
 			.blockRewardPoolAddress(Address.ZERO)
 			.targetMiningTimeMs(0)
@@ -71,8 +71,20 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 
 	long currentAuthorityCount;
 	long currentValidatorCount;
+	long currentUnlimitedValidatorCount;
+	long validatorMiningWindowBlocks;
 	long updatedAtBlockHeight;
 	Instant updatedAtTimestamp;
+
+	@Override
+	public long getCurrentUnlimitedValidatorCount() {
+		return version == NetworkParamsStateVersion.V1 ? currentValidatorCount : currentUnlimitedValidatorCount;
+	}
+
+	@Override
+	public long getValidatorMiningWindowBlocks() {
+		return version == NetworkParamsStateVersion.V1 ? 0 : validatorMiningWindowBlocks;
+	}
 
 	public NetworkParamsStateImpl incrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {
 		return this.toBuilder()
@@ -132,6 +144,9 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 				.minDifficulty(p.getMinDifficulty() != null ? p.getMinDifficulty() : this.minDifficulty)
 				.minTxBaseFee(p.getMinTxBaseFee() != null ? p.getMinTxBaseFee() : this.minTxBaseFee)
 				.minTxByteFee(p.getMinTxByteFee() != null ? p.getMinTxByteFee() : this.minTxByteFee)
+				.validatorMiningWindowBlocks(p.getValidatorMiningWindowBlocks() != null
+						? p.getValidatorMiningWindowBlocks()
+						: this.validatorMiningWindowBlocks)
 				.updatedByTxHash(txHash)
 				.updatedAtBlockHeight(blockHeight)
 				.updatedAtTimestamp(time)

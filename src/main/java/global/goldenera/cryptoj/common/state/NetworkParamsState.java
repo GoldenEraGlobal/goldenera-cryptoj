@@ -62,6 +62,16 @@ public interface NetworkParamsState {
 
 	long getCurrentValidatorCount();
 
+	/** Legacy V1 states treat every registered validator as UNLIMITED. */
+	default long getCurrentUnlimitedValidatorCount() {
+		return getCurrentValidatorCount();
+	}
+
+	/** Zero means this parameter is absent from a legacy V1 state. */
+	default long getValidatorMiningWindowBlocks() {
+		return 0;
+	}
+
 	long getUpdatedAtBlockHeight();
 
 	Instant getUpdatedAtTimestamp();

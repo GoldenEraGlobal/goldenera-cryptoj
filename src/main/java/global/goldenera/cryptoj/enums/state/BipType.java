@@ -38,7 +38,8 @@ import lombok.experimental.FieldDefaults;
 public enum BipType {
     UNKNOWN(-1), AUTHORITY_ADD(0), AUTHORITY_REMOVE(1), ADDRESS_ALIAS_ADD(2), ADDRESS_ALIAS_REMOVE(3), TOKEN_CREATE(
             4),
-    TOKEN_UPDATE(5), TOKEN_MINT(6), TOKEN_BURN(7), NETWORK_PARAMS_SET(8), VALIDATOR_ADD(9), VALIDATOR_REMOVE(10);
+    TOKEN_UPDATE(5), TOKEN_MINT(6), TOKEN_BURN(7), NETWORK_PARAMS_SET(8), VALIDATOR_ADD(9), VALIDATOR_REMOVE(10),
+    VALIDATOR_MINING_POLICY_SET(11);
 
     int code;
 
@@ -75,6 +76,8 @@ public enum BipType {
                 return BipType.VALIDATOR_ADD;
             case BIP_VALIDATOR_REMOVE:
                 return BipType.VALIDATOR_REMOVE;
+            case BIP_VALIDATOR_MINING_POLICY_SET:
+                return BipType.VALIDATOR_MINING_POLICY_SET;
             default:
                 throw new CryptoJFailedException(
                         "Unknown TxPayloadType: " + txPayloadType + " in BipType.fromTxPayloadType");

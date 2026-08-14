@@ -32,6 +32,7 @@ import global.goldenera.cryptoj.common.state.ValidatorState;
 import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.validator.impl.ValidatorStateV1DecodingStrategy;
+import global.goldenera.cryptoj.serialization.state.validator.impl.ValidatorStateV2DecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
 
@@ -43,6 +44,7 @@ public class ValidatorStateDecoder {
 
 	private ValidatorStateDecoder() {
 		strategies.put(ValidatorStateVersion.V1, new ValidatorStateV1DecodingStrategy());
+		strategies.put(ValidatorStateVersion.V2, new ValidatorStateV2DecodingStrategy());
 	}
 
 	public ValidatorState decode(Bytes rlpBytes) {
@@ -51,11 +53,15 @@ public class ValidatorStateDecoder {
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
-		input.enterList();
+		int fields = input.enterList();
 
 		// Read version
 		int versionCode = input.readIntScalar();
 		ValidatorStateVersion version = ValidatorStateVersion.fromCode(versionCode);
+		int expectedFields = version == ValidatorStateVersion.V1 ? 4 : 9;
+		if (fields != expectedFields) {
+			throw new CryptoJFailedException("Invalid ValidatorState field count for " + version + ": " + fields);
+		}
 		if (version == null) {
 			throw new CryptoJFailedException("Unknown ValidatorState version: " + versionCode);
 		}

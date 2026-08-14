@@ -32,6 +32,7 @@ import global.goldenera.cryptoj.common.state.NetworkParamsState;
 import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.networkparams.impl.NetworkParamsStateV1EncodingStrategy;
+import global.goldenera.cryptoj.serialization.state.networkparams.impl.NetworkParamsStateV2EncodingStrategy;
 import global.goldenera.rlp.RLP;
 
 public class NetworkParamsStateEncoder {
@@ -42,6 +43,7 @@ public class NetworkParamsStateEncoder {
 
 	private NetworkParamsStateEncoder() {
 		strategies.put(NetworkParamsStateVersion.V1, new NetworkParamsStateV1EncodingStrategy());
+		strategies.put(NetworkParamsStateVersion.V2, new NetworkParamsStateV2EncodingStrategy());
 	}
 
 	public Bytes encode(NetworkParamsState state) {

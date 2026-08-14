@@ -24,7 +24,16 @@
 package global.goldenera.cryptoj.common.payloads;
 
 import global.goldenera.cryptoj.enums.TxPayloadType;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 
 public interface TxPayload {
 	TxPayloadType getPayloadType();
+
+	/**
+	 * Returns the schema version of this payload type. Historical payloads did not
+	 * encode this value and are therefore implicit V1.
+	 */
+	default TxPayloadVersion getPayloadVersion() {
+		return TxPayloadVersion.V1;
+	}
 }

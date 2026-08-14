@@ -32,6 +32,7 @@ import global.goldenera.cryptoj.common.state.NetworkParamsState;
 import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.networkparams.impl.NetworkParamsStateV1DecodingStrategy;
+import global.goldenera.cryptoj.serialization.state.networkparams.impl.NetworkParamsStateV2DecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
 
@@ -43,6 +44,7 @@ public class NetworkParamsStateDecoder {
 
 	private NetworkParamsStateDecoder() {
 		strategies.put(NetworkParamsStateVersion.V1, new NetworkParamsStateV1DecodingStrategy());
+		strategies.put(NetworkParamsStateVersion.V2, new NetworkParamsStateV2DecodingStrategy());
 	}
 
 	public NetworkParamsState decode(Bytes rlpBytes) {
@@ -51,11 +53,15 @@ public class NetworkParamsStateDecoder {
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
-		input.enterList();
+		int fields = input.enterList();
 
 		// Read version
 		int versionCode = input.readIntScalar();
 		NetworkParamsStateVersion version = NetworkParamsStateVersion.fromCode(versionCode);
+		int expectedFields = version == NetworkParamsStateVersion.V1 ? 14 : 16;
+		if (fields != expectedFields) {
+			throw new CryptoJFailedException("Invalid NetworkParamsState field count for " + version + ": " + fields);
+		}
 		if (version == null) {
 			throw new CryptoJFailedException("Unknown NetworkParamsState version: " + versionCode);
 		}

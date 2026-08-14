@@ -45,4 +45,8 @@ public interface TxBipNetworkParamsSetPayload extends TxPayload {
 	Wei getMinTxBaseFee();
 
 	Wei getMinTxByteFee();
+
+	default Long getValidatorMiningWindowBlocks() {
+		return null;
+	}
 }

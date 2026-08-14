@@ -26,6 +26,7 @@ package global.goldenera.cryptoj.common.state;
 import java.time.Instant;
 
 import global.goldenera.cryptoj.datatypes.Hash;
+import global.goldenera.cryptoj.enums.MiningLimitMode;
 import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 
 public interface ValidatorState {
@@ -36,6 +37,28 @@ public interface ValidatorState {
 	Instant getCreatedAtTimestamp();
 
 	Hash getOriginTxHash();
+
+	/** V1 states resolve to the consensus legacy default UNLIMITED policy. */
+	default MiningLimitMode getMiningLimitMode() {
+		return MiningLimitMode.UNLIMITED;
+	}
+
+	/** V1 states resolve to the consensus legacy default share value 0. */
+	default long getMaxMiningShareBps() {
+		return 0;
+	}
+
+	default Hash getPolicyUpdatedByTxHash() {
+		return null;
+	}
+
+	default long getPolicyUpdatedAtBlockHeight() {
+		return Long.MIN_VALUE;
+	}
+
+	default Instant getPolicyUpdatedAtTimestamp() {
+		return null;
+	}
 
 	/**
 	 * Checks if this address is registered as a validator.
