@@ -58,7 +58,7 @@ public class NetworkParamsStateDecoder {
 		// Read version
 		int versionCode = input.readIntScalar();
 		NetworkParamsStateVersion version = NetworkParamsStateVersion.fromCode(versionCode);
-		int expectedFields = version == NetworkParamsStateVersion.V1 ? 14 : 16;
+		int expectedFields = version == NetworkParamsStateVersion.V1 ? 14 : 17;
 		if (fields != expectedFields) {
 			throw new CryptoJFailedException("Invalid NetworkParamsState field count for " + version + ": " + fields);
 		}

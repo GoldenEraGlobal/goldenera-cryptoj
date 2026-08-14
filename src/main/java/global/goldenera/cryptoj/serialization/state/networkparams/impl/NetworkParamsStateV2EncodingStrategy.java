@@ -35,13 +35,31 @@ public class NetworkParamsStateV2EncodingStrategy implements NetworkParamsStateE
 	@Override
 	public void encode(RLPOutput out, NetworkParamsState state) {
 		MiningConsensusRules.validateWindowSize(state.getValidatorMiningWindowBlocks());
-		if (state.getCurrentUnlimitedValidatorCount() < 1
-				|| state.getCurrentUnlimitedValidatorCount() > state.getCurrentValidatorCount()) {
+		if (state.getCurrentValidatorCount() == 0 && state.getCurrentUnlimitedValidatorCount() != 0) {
 			throw new IllegalArgumentException(
-					"currentUnlimitedValidatorCount must be in range 1..currentValidatorCount");
+					"A zero-validator set requires currentUnlimitedValidatorCount = 0");
+		}
+		if (state.getCurrentValidatorCount() != 0
+				&& (state.getCurrentUnlimitedValidatorCount() < 1
+						|| state.getCurrentUnlimitedValidatorCount() > state.getCurrentValidatorCount())) {
+			throw new IllegalArgumentException(
+					"A non-empty validator set requires currentUnlimitedValidatorCount in range 1..currentValidatorCount");
+		}
+		if (state.getLimitedValidatorMiningSharesBps().size()
+				!= state.getCurrentValidatorCount() - state.getCurrentUnlimitedValidatorCount()) {
+			throw new IllegalArgumentException("LIMITED validator policy summary is inconsistent");
+		}
+		long previous = 0;
+		for (long bps : state.getLimitedValidatorMiningSharesBps()) {
+			MiningConsensusRules.validateLimitedPolicyForWindow(state.getValidatorMiningWindowBlocks(), bps);
+			if (bps < previous) {
+				throw new IllegalArgumentException("LIMITED validator policy summary must be sorted");
+			}
+			previous = bps;
 		}
 		legacyFields.encode(out, state);
 		out.writeLongScalar(state.getValidatorMiningWindowBlocks());
 		out.writeLongScalar(state.getCurrentUnlimitedValidatorCount());
+		out.writeList(state.getLimitedValidatorMiningSharesBps(), (bps, listOut) -> listOut.writeLongScalar(bps));
 	}
 }

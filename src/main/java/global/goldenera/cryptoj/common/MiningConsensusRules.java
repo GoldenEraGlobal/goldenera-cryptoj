@@ -59,4 +59,13 @@ public final class MiningConsensusRules {
 					+ MIN_VALIDATOR_MINING_WINDOW_BLOCKS + ".." + MAX_VALIDATOR_MINING_WINDOW_BLOCKS);
 		}
 	}
+
+	public static void validateLimitedPolicyForWindow(long validatorMiningWindowBlocks, long maxMiningShareBps) {
+		validateWindowSize(validatorMiningWindowBlocks);
+		validatePolicy(MiningLimitMode.LIMITED, maxMiningShareBps);
+		if (validatorMiningWindowBlocks * maxMiningShareBps < BASIS_POINTS_DENOMINATOR) {
+			throw new CryptoJFailedException(
+					"LIMITED mining policy must allow at least one block in the configured window");
+		}
+	}
 }

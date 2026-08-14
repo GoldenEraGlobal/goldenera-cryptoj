@@ -25,6 +25,7 @@ package global.goldenera.cryptoj.common.state.impl;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.tuweni.units.ethereum.Wei;
 
@@ -34,6 +35,7 @@ import global.goldenera.cryptoj.datatypes.Address;
 import global.goldenera.cryptoj.datatypes.Hash;
 import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
@@ -73,6 +75,8 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 	long currentValidatorCount;
 	long currentUnlimitedValidatorCount;
 	long validatorMiningWindowBlocks;
+	@Singular("limitedValidatorMiningShareBps")
+	List<Long> limitedValidatorMiningSharesBps;
 	long updatedAtBlockHeight;
 	Instant updatedAtTimestamp;
 
@@ -84,6 +88,11 @@ public class NetworkParamsStateImpl implements NetworkParamsState {
 	@Override
 	public long getValidatorMiningWindowBlocks() {
 		return version == NetworkParamsStateVersion.V1 ? 0 : validatorMiningWindowBlocks;
+	}
+
+	@Override
+	public List<Long> getLimitedValidatorMiningSharesBps() {
+		return version == NetworkParamsStateVersion.V1 ? List.of() : List.copyOf(limitedValidatorMiningSharesBps);
 	}
 
 	public NetworkParamsStateImpl incrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {

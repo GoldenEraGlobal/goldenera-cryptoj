@@ -24,9 +24,11 @@
 package global.goldenera.cryptoj.serialization.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -41,6 +43,7 @@ import global.goldenera.cryptoj.datatypes.Hash;
 import global.goldenera.cryptoj.enums.MiningLimitMode;
 import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
 import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.networkparams.NetworkParamsStateDecoder;
 import global.goldenera.cryptoj.serialization.state.networkparams.NetworkParamsStateEncoder;
 import global.goldenera.cryptoj.serialization.state.validator.ValidatorStateDecoder;
@@ -91,8 +94,80 @@ class ConsensusStateSerializationTest {
 		NetworkParamsState v2 = baseNetworkParams(NetworkParamsStateVersion.V2)
 				.validatorMiningWindowBlocks(1_000)
 				.currentUnlimitedValidatorCount(2)
+				.limitedValidatorMiningSharesBps(List.of(1_000L))
 				.build();
-		assertEquals(v2, NetworkParamsStateDecoder.INSTANCE.decode(NetworkParamsStateEncoder.INSTANCE.encode(v2)));
+		Bytes v2Bytes = NetworkParamsStateEncoder.INSTANCE.encode(v2);
+		assertEquals("0xf84e020a94000000000000000000000000000000000000000082753064050a0101"
+				+ "a00000000000000000000000000000000000000000000000000000000000000000"
+				+ "0203058203e88203e802c38203e8", v2Bytes.toHexString());
+		assertEquals(v2, NetworkParamsStateDecoder.INSTANCE.decode(v2Bytes));
+	}
+
+	@Test
+	void rejectsInconsistentOrNonCanonicalLimitedPolicySummary() {
+		NetworkParamsState inconsistent = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(2)
+				.build();
+		assertThrows(IllegalArgumentException.class,
+				() -> NetworkParamsStateEncoder.INSTANCE.encode(inconsistent));
+
+		NetworkParamsState unsorted = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(1)
+				.limitedValidatorMiningSharesBps(List.of(2_000L, 1_000L))
+				.build();
+		assertThrows(IllegalArgumentException.class,
+				() -> NetworkParamsStateEncoder.INSTANCE.encode(unsorted));
+	}
+
+	@Test
+	void roundTripsCanonicalZeroValidatorNetworkParamsStateV2() {
+		NetworkParamsState state = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.currentValidatorCount(0)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(0)
+				.limitedValidatorMiningSharesBps(List.of())
+				.build();
+
+		Bytes encoded = NetworkParamsStateEncoder.INSTANCE.encode(state);
+
+		assertEquals(state, NetworkParamsStateDecoder.INSTANCE.decode(encoded));
+	}
+
+	@Test
+	void rejectsNonCanonicalZeroValidatorNetworkParamsStateV2() {
+		NetworkParamsState canonical = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.currentValidatorCount(0)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(0)
+				.limitedValidatorMiningSharesBps(List.of())
+				.build();
+		NetworkParamsState nonZeroUnlimited = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.currentValidatorCount(0)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(1)
+				.limitedValidatorMiningSharesBps(List.of())
+				.build();
+		NetworkParamsState limitedEntry = baseNetworkParams(NetworkParamsStateVersion.V2)
+				.currentValidatorCount(0)
+				.validatorMiningWindowBlocks(1_000)
+				.currentUnlimitedValidatorCount(0)
+				.limitedValidatorMiningSharesBps(List.of(1_000L))
+				.build();
+
+		assertThrows(IllegalArgumentException.class,
+				() -> NetworkParamsStateEncoder.INSTANCE.encode(nonZeroUnlimited));
+		assertThrows(IllegalArgumentException.class,
+				() -> NetworkParamsStateEncoder.INSTANCE.encode(limitedEntry));
+
+		Bytes canonicalBytes = NetworkParamsStateEncoder.INSTANCE.encode(canonical);
+		Bytes nonZeroUnlimitedBytes = Bytes.concatenate(
+				canonicalBytes.slice(0, canonicalBytes.size() - 2),
+				Bytes.of(1),
+				canonicalBytes.slice(canonicalBytes.size() - 1));
+		assertThrows(CryptoJFailedException.class,
+				() -> NetworkParamsStateDecoder.INSTANCE.decode(nonZeroUnlimitedBytes));
 	}
 
 	private NetworkParamsStateImpl.NetworkParamsStateImplBuilder baseNetworkParams(NetworkParamsStateVersion version) {

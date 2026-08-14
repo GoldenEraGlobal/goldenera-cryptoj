@@ -25,6 +25,7 @@ package global.goldenera.cryptoj.serialization.state.networkparams.impl;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.tuweni.units.ethereum.Wei;
 
@@ -57,10 +58,27 @@ public class NetworkParamsStateV2DecodingStrategy implements NetworkParamsStateD
 		Instant updatedAtTimestamp = Instant.ofEpochMilli(input.readLongScalar());
 		long validatorMiningWindowBlocks = input.readLongScalar();
 		long currentUnlimitedValidatorCount = input.readLongScalar();
+		List<Long> limitedValidatorMiningSharesBps = input.readList(listInput -> listInput.readLongScalar());
 		MiningConsensusRules.validateWindowSize(validatorMiningWindowBlocks);
-		if (currentUnlimitedValidatorCount < 1 || currentUnlimitedValidatorCount > currentValidatorCount) {
+		if (currentValidatorCount == 0 && currentUnlimitedValidatorCount != 0) {
 			throw new CryptoJFailedException(
-					"currentUnlimitedValidatorCount must be in range 1..currentValidatorCount");
+					"A zero-validator set requires currentUnlimitedValidatorCount = 0");
+		}
+		if (currentValidatorCount != 0
+				&& (currentUnlimitedValidatorCount < 1 || currentUnlimitedValidatorCount > currentValidatorCount)) {
+			throw new CryptoJFailedException(
+					"A non-empty validator set requires currentUnlimitedValidatorCount in range 1..currentValidatorCount");
+		}
+		if (limitedValidatorMiningSharesBps.size() != currentValidatorCount - currentUnlimitedValidatorCount) {
+			throw new CryptoJFailedException("LIMITED validator policy summary is inconsistent");
+		}
+		long previous = 0;
+		for (long bps : limitedValidatorMiningSharesBps) {
+			MiningConsensusRules.validateLimitedPolicyForWindow(validatorMiningWindowBlocks, bps);
+			if (bps < previous) {
+				throw new CryptoJFailedException("LIMITED validator policy summary must be sorted");
+			}
+			previous = bps;
 		}
 		return NetworkParamsStateImpl.builder()
 				.version(NetworkParamsStateVersion.V2)
@@ -77,6 +95,7 @@ public class NetworkParamsStateV2DecodingStrategy implements NetworkParamsStateD
 				.currentValidatorCount(currentValidatorCount)
 				.validatorMiningWindowBlocks(validatorMiningWindowBlocks)
 				.currentUnlimitedValidatorCount(currentUnlimitedValidatorCount)
+				.limitedValidatorMiningSharesBps(limitedValidatorMiningSharesBps)
 				.updatedAtBlockHeight(updatedAtBlockHeight)
 				.updatedAtTimestamp(updatedAtTimestamp)
 				.build();

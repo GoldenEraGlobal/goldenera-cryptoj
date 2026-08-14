@@ -26,6 +26,7 @@ package global.goldenera.cryptoj.common.state;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -70,6 +71,11 @@ public interface NetworkParamsState {
 	/** Zero means this parameter is absent from a legacy V1 state. */
 	default long getValidatorMiningWindowBlocks() {
 		return 0;
+	}
+
+	/** Sorted multiset of BPS values for all active LIMITED validators. */
+	default List<Long> getLimitedValidatorMiningSharesBps() {
+		return List.of();
 	}
 
 	long getUpdatedAtBlockHeight();
