@@ -28,7 +28,6 @@ import java.math.BigInteger;
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.ethereum.Wei;
 
-import global.goldenera.cryptoj.common.MiningConsensusRules;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayloadImpl;
 import global.goldenera.cryptoj.datatypes.Address;
@@ -49,9 +48,6 @@ public class TxNetworkParamsSetV2DecodingStrategy implements TxPayloadDecodingSt
 		Wei minTxBaseFee = input.readOptionalWeiScalar();
 		Wei minTxByteFee = input.readOptionalWeiScalar();
 		Long validatorMiningWindowBlocks = input.readOptionalLongScalar();
-		if (validatorMiningWindowBlocks != null) {
-			MiningConsensusRules.validateWindowSize(validatorMiningWindowBlocks);
-		}
 		return TxBipNetworkParamsSetPayloadImpl.builder()
 				.payloadVersion(TxPayloadVersion.V2)
 				.blockReward(blockReward)

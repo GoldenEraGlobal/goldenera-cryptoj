@@ -95,6 +95,18 @@ class TxPayloadVersionSerializationTest {
 	}
 
 	@Test
+	void structurallyRoundTripsOutOfRangeWindowForNodeConsensusRejection() {
+		TxBipNetworkParamsSetPayload invalid = TxBipNetworkParamsSetPayloadImpl.builder()
+				.payloadVersion(TxPayloadVersion.V2)
+				.validatorMiningWindowBlocks(10_001L)
+				.build();
+
+		Bytes encoded = TxPayloadEncoder.INSTANCE.encode(invalid, TxVersion.V1);
+
+		assertEquals(invalid, TxPayloadDecoder.INSTANCE.decode(encoded, TxVersion.V1));
+	}
+
+	@Test
 	void roundTripsNewPolicyPayloadAndRejectsNonCanonicalPolicy() {
 		TxBipValidatorMiningPolicySetPayload payload = TxBipValidatorMiningPolicySetPayloadImpl.builder()
 				.validatorAddress(VALIDATOR)

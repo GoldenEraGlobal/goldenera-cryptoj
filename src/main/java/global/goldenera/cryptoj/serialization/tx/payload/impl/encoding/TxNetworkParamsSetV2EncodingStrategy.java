@@ -23,7 +23,6 @@
  */
 package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
 
-import global.goldenera.cryptoj.common.MiningConsensusRules;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
 import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
 import global.goldenera.rlp.RLPOutput;
@@ -34,9 +33,6 @@ public class TxNetworkParamsSetV2EncodingStrategy implements TxPayloadEncodingSt
 
 	@Override
 	public void encode(RLPOutput out, TxBipNetworkParamsSetPayload payload) {
-		if (payload.getValidatorMiningWindowBlocks() != null) {
-			MiningConsensusRules.validateWindowSize(payload.getValidatorMiningWindowBlocks());
-		}
 		legacyFields.encode(out, payload);
 		out.writeOptionalLongScalar(payload.getValidatorMiningWindowBlocks());
 	}
