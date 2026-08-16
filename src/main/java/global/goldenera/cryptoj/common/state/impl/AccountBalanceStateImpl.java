@@ -56,6 +56,7 @@ public class AccountBalanceStateImpl implements AccountBalanceState {
     AccountBalanceStateVersion version;
     Wei balance;
     Wei lockedMiningReward;
+    @Builder.Default
     Wei pendingMiningRewardCancellation;
     long updatedAtBlockHeight;
     Instant updatedAtTimestamp;
