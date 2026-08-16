@@ -32,21 +32,25 @@ import global.goldenera.cryptoj.datatypes.Address;
 
 public interface TxBipNetworkParamsSetPayload extends TxPayload {
 
-	Wei getBlockReward();
+    Wei getBlockReward();
 
-	Address getBlockRewardPoolAddress();
+    Address getBlockRewardPoolAddress();
 
-	Long getTargetMiningTimeMs();
+    Long getTargetMiningTimeMs();
 
-	Long getAsertHalfLifeBlocks();
+    Long getAsertHalfLifeBlocks();
 
-	BigInteger getMinDifficulty();
+    BigInteger getMinDifficulty();
 
-	Wei getMinTxBaseFee();
+    Wei getMinTxBaseFee();
 
-	Wei getMinTxByteFee();
+    Wei getMinTxByteFee();
 
-	default Long getValidatorMiningWindowBlocks() {
-		return null;
-	}
+    default Long getValidatorMiningWindowBlocks() {
+        return null;
+    }
+
+    default Long getMiningRewardVestingBlocks() {
+        return null;
+    }
 }

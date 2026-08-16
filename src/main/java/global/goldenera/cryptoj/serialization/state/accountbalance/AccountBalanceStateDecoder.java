@@ -28,10 +28,12 @@ import java.util.Map;
 
 import org.apache.tuweni.bytes.Bytes;
 
+import global.goldenera.cryptoj.common.AccountBalanceStateValidation;
 import global.goldenera.cryptoj.common.state.AccountBalanceState;
 import global.goldenera.cryptoj.enums.state.AccountBalanceStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.accountbalance.impl.AccountBalanceStateV1DecodingStrategy;
+import global.goldenera.cryptoj.serialization.state.accountbalance.impl.AccountBalanceStateV2DecodingStrategy;
 import global.goldenera.rlp.RLP;
 import global.goldenera.rlp.RLPInput;
 
@@ -43,6 +45,7 @@ public class AccountBalanceStateDecoder {
 
 	private AccountBalanceStateDecoder() {
 		strategies.put(AccountBalanceStateVersion.V1, new AccountBalanceStateV1DecodingStrategy());
+		strategies.put(AccountBalanceStateVersion.V2, new AccountBalanceStateV2DecodingStrategy());
 	}
 
 	public AccountBalanceState decode(Bytes rlpBytes) {
@@ -51,17 +54,25 @@ public class AccountBalanceStateDecoder {
 		}
 		RLP.validate(rlpBytes);
 		RLPInput input = RLP.input(rlpBytes);
-		input.enterList();
+		int fields = input.enterList();
 
 		// Read version
 		int versionCode = input.readIntScalar();
 		AccountBalanceStateVersion version = AccountBalanceStateVersion.fromCode(versionCode);
+		int expectedFields = version == AccountBalanceStateVersion.V1 ? 4 : 6;
+		if (fields != expectedFields) {
+			throw new CryptoJFailedException("Invalid AccountBalanceState field count for " + version + ": " + fields);
+		}
 		AccountBalanceStateDecodingStrategy strategy = strategies.get(version);
 		if (strategy == null) {
 			throw new CryptoJFailedException("Unknown AccountBalanceState version: " + version);
 		}
 
 		AccountBalanceState state = strategy.decode(input);
+		AccountBalanceStateValidation.validate(state);
+		if (!input.isEndOfCurrentList()) {
+			throw new CryptoJFailedException("AccountBalanceState contains unexpected RLP fields");
+		}
 		input.leaveList();
 		return state;
 	}

@@ -21,20 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
+package global.goldenera.cryptoj.serialization.state.miningrewardmaturity.impl;
 
-import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
-import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
+import java.util.Comparator;
+
+import global.goldenera.cryptoj.common.MiningRewardMaturityStateValidation;
+import global.goldenera.cryptoj.common.state.MiningRewardMaturityState;
+import global.goldenera.cryptoj.serialization.state.miningrewardmaturity.MiningRewardMaturityStateEncodingStrategy;
 import global.goldenera.rlp.RLPOutput;
 
-public class TxNetworkParamsSetV2EncodingStrategy implements TxPayloadEncodingStrategy<TxBipNetworkParamsSetPayload> {
+public class MiningRewardMaturityStateV1EncodingStrategy implements MiningRewardMaturityStateEncodingStrategy {
 
-    private final TxNetworkParamsSetEncodingStrategy legacyFields = new TxNetworkParamsSetEncodingStrategy();
-
-    @Override
-    public void encode(RLPOutput out, TxBipNetworkParamsSetPayload payload) {
-        legacyFields.encode(out, payload);
-        out.writeOptionalLongScalar(payload.getValidatorMiningWindowBlocks());
-        out.writeOptionalLongScalar(payload.getMiningRewardVestingBlocks());
-    }
+	@Override
+	public void encode(RLPOutput out, MiningRewardMaturityState state) {
+		MiningRewardMaturityStateValidation.validate(state);
+		out.startList();
+		state.getRewards().entrySet().stream()
+				.sorted(Comparator.comparing(entry -> entry.getKey().toHexString()))
+				.forEach(entry -> {
+					out.startList();
+					out.writeBytes(entry.getKey());
+					out.writeBigIntegerScalar(entry.getValue().toBigInteger());
+					out.endList();
+				});
+		out.endList();
+	}
 }

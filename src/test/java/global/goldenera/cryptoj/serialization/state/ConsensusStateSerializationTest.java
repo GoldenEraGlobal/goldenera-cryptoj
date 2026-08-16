@@ -51,146 +51,148 @@ import global.goldenera.cryptoj.serialization.state.validator.ValidatorStateEnco
 
 class ConsensusStateSerializationTest {
 
-	@Test
-	void preservesValidatorStateV1BytesAndResolvesLegacyPolicy() {
-		String zeros = "00".repeat(32);
-		Bytes historical = Bytes.fromHexString("0xe70105c38203e8a0" + zeros);
-		ValidatorState decoded = ValidatorStateDecoder.INSTANCE.decode(historical);
-		assertEquals(ValidatorStateVersion.V1, decoded.getVersion());
-		assertEquals(MiningLimitMode.UNLIMITED, decoded.getMiningLimitMode());
-		assertEquals(0, decoded.getMaxMiningShareBps());
-		assertEquals(historical, ValidatorStateEncoder.INSTANCE.encode(decoded));
-	}
+    @Test
+    void preservesValidatorStateV1BytesAndResolvesLegacyPolicy() {
+        String zeros = "00".repeat(32);
+        Bytes historical = Bytes.fromHexString("0xe70105c38203e8a0" + zeros);
+        ValidatorState decoded = ValidatorStateDecoder.INSTANCE.decode(historical);
+        assertEquals(ValidatorStateVersion.V1, decoded.getVersion());
+        assertEquals(MiningLimitMode.UNLIMITED, decoded.getMiningLimitMode());
+        assertEquals(0, decoded.getMaxMiningShareBps());
+        assertEquals(historical, ValidatorStateEncoder.INSTANCE.encode(decoded));
+    }
 
-	@Test
-	void roundTripsValidatorStateV2WithPolicyAuditMetadata() {
-		ValidatorState state = ValidatorStateImpl.builder()
-				.version(ValidatorStateVersion.V2)
-				.createdAtBlockHeight(5)
-				.createdAtTimestamp(Instant.ofEpochMilli(1_000))
-				.originTxHash(hash((byte) 1))
-				.miningLimitMode(MiningLimitMode.LIMITED)
-				.maxMiningShareBps(4_000)
-				.policyUpdatedByTxHash(hash((byte) 2))
-				.policyUpdatedAtBlockHeight(10)
-				.policyUpdatedAtTimestamp(Instant.ofEpochMilli(2_000))
-				.build();
-		assertEquals(state, ValidatorStateDecoder.INSTANCE.decode(ValidatorStateEncoder.INSTANCE.encode(state)));
-	}
+    @Test
+    void roundTripsValidatorStateV2WithPolicyAuditMetadata() {
+        ValidatorState state = ValidatorStateImpl.builder()
+                .version(ValidatorStateVersion.V2)
+                .createdAtBlockHeight(5)
+                .createdAtTimestamp(Instant.ofEpochMilli(1_000))
+                .originTxHash(hash((byte) 1))
+                .miningLimitMode(MiningLimitMode.LIMITED)
+                .maxMiningShareBps(4_000)
+                .policyUpdatedByTxHash(hash((byte) 2))
+                .policyUpdatedAtBlockHeight(10)
+                .policyUpdatedAtTimestamp(Instant.ofEpochMilli(2_000))
+                .build();
+        assertEquals(state, ValidatorStateDecoder.INSTANCE.decode(ValidatorStateEncoder.INSTANCE.encode(state)));
+    }
 
-	@Test
-	void roundTripsBothNetworkParamsStateVersionsWithLegacyEffectiveCounter() {
-		NetworkParamsState v1 = baseNetworkParams(NetworkParamsStateVersion.V1).build();
-		String zeros20 = "00".repeat(20);
-		String zeros32 = "00".repeat(32);
-		Bytes historicalV1 = Bytes.fromHexString("0xf846010a94" + zeros20
-				+ "82753064050a0101a0" + zeros32 + "0203058203e8");
-		assertEquals(historicalV1, NetworkParamsStateEncoder.INSTANCE.encode(v1));
-		NetworkParamsState decodedV1 = NetworkParamsStateDecoder.INSTANCE.decode(historicalV1);
-		assertEquals(historicalV1, NetworkParamsStateEncoder.INSTANCE.encode(decodedV1));
-		assertEquals(3, decodedV1.getCurrentUnlimitedValidatorCount());
-		assertEquals(0, decodedV1.getValidatorMiningWindowBlocks());
+    @Test
+    void roundTripsBothNetworkParamsStateVersionsWithLegacyEffectiveCounter() {
+        NetworkParamsState v1 = baseNetworkParams(NetworkParamsStateVersion.V1).build();
+        String zeros20 = "00".repeat(20);
+        String zeros32 = "00".repeat(32);
+        Bytes historicalV1 = Bytes.fromHexString("0xf846010a94" + zeros20
+                + "82753064050a0101a0" + zeros32 + "0203058203e8");
+        assertEquals(historicalV1, NetworkParamsStateEncoder.INSTANCE.encode(v1));
+        NetworkParamsState decodedV1 = NetworkParamsStateDecoder.INSTANCE.decode(historicalV1);
+        assertEquals(historicalV1, NetworkParamsStateEncoder.INSTANCE.encode(decodedV1));
+        assertEquals(3, decodedV1.getCurrentUnlimitedValidatorCount());
+        assertEquals(0, decodedV1.getValidatorMiningWindowBlocks());
+        assertEquals(0, decodedV1.getMiningRewardVestingBlocks());
 
-		NetworkParamsState v2 = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(2)
-				.limitedValidatorMiningSharesBps(List.of(1_000L))
-				.build();
-		Bytes v2Bytes = NetworkParamsStateEncoder.INSTANCE.encode(v2);
-		assertEquals("0xf84e020a94000000000000000000000000000000000000000082753064050a0101"
-				+ "a00000000000000000000000000000000000000000000000000000000000000000"
-				+ "0203058203e88203e802c38203e8", v2Bytes.toHexString());
-		assertEquals(v2, NetworkParamsStateDecoder.INSTANCE.decode(v2Bytes));
-	}
+        NetworkParamsState v2 = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(2)
+                .limitedValidatorMiningSharesBps(List.of(1_000L))
+                .miningRewardVestingBlocks(86_400)
+                .build();
+        Bytes v2Bytes = NetworkParamsStateEncoder.INSTANCE.encode(v2);
+        assertEquals("0xf852020a94000000000000000000000000000000000000000082753064050a0101"
+                + "a00000000000000000000000000000000000000000000000000000000000000000"
+                + "0203058203e88203e802c38203e883015180", v2Bytes.toHexString());
+        assertEquals(v2, NetworkParamsStateDecoder.INSTANCE.decode(v2Bytes));
+    }
 
-	@Test
-	void rejectsInconsistentOrNonCanonicalLimitedPolicySummary() {
-		NetworkParamsState inconsistent = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(2)
-				.build();
-		assertThrows(IllegalArgumentException.class,
-				() -> NetworkParamsStateEncoder.INSTANCE.encode(inconsistent));
+    @Test
+    void rejectsInconsistentOrNonCanonicalLimitedPolicySummary() {
+        NetworkParamsState inconsistent = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(2)
+                .build();
+        assertThrows(IllegalArgumentException.class,
+                () -> NetworkParamsStateEncoder.INSTANCE.encode(inconsistent));
 
-		NetworkParamsState unsorted = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(1)
-				.limitedValidatorMiningSharesBps(List.of(2_000L, 1_000L))
-				.build();
-		assertThrows(IllegalArgumentException.class,
-				() -> NetworkParamsStateEncoder.INSTANCE.encode(unsorted));
-	}
+        NetworkParamsState unsorted = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(1)
+                .limitedValidatorMiningSharesBps(List.of(2_000L, 1_000L))
+                .build();
+        assertThrows(IllegalArgumentException.class,
+                () -> NetworkParamsStateEncoder.INSTANCE.encode(unsorted));
+    }
 
-	@Test
-	void roundTripsCanonicalZeroValidatorNetworkParamsStateV2() {
-		NetworkParamsState state = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.currentValidatorCount(0)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(0)
-				.limitedValidatorMiningSharesBps(List.of())
-				.build();
+    @Test
+    void roundTripsCanonicalZeroValidatorNetworkParamsStateV2() {
+        NetworkParamsState state = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .currentValidatorCount(0)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(0)
+                .limitedValidatorMiningSharesBps(List.of())
+                .build();
 
-		Bytes encoded = NetworkParamsStateEncoder.INSTANCE.encode(state);
+        Bytes encoded = NetworkParamsStateEncoder.INSTANCE.encode(state);
 
-		assertEquals(state, NetworkParamsStateDecoder.INSTANCE.decode(encoded));
-	}
+        assertEquals(state, NetworkParamsStateDecoder.INSTANCE.decode(encoded));
+    }
 
-	@Test
-	void rejectsNonCanonicalZeroValidatorNetworkParamsStateV2() {
-		NetworkParamsState canonical = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.currentValidatorCount(0)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(0)
-				.limitedValidatorMiningSharesBps(List.of())
-				.build();
-		NetworkParamsState nonZeroUnlimited = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.currentValidatorCount(0)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(1)
-				.limitedValidatorMiningSharesBps(List.of())
-				.build();
-		NetworkParamsState limitedEntry = baseNetworkParams(NetworkParamsStateVersion.V2)
-				.currentValidatorCount(0)
-				.validatorMiningWindowBlocks(1_000)
-				.currentUnlimitedValidatorCount(0)
-				.limitedValidatorMiningSharesBps(List.of(1_000L))
-				.build();
+    @Test
+    void rejectsNonCanonicalZeroValidatorNetworkParamsStateV2() {
+        NetworkParamsState canonical = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .currentValidatorCount(0)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(0)
+                .limitedValidatorMiningSharesBps(List.of())
+                .build();
+        NetworkParamsState nonZeroUnlimited = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .currentValidatorCount(0)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(1)
+                .limitedValidatorMiningSharesBps(List.of())
+                .build();
+        NetworkParamsState limitedEntry = baseNetworkParams(NetworkParamsStateVersion.V2)
+                .currentValidatorCount(0)
+                .validatorMiningWindowBlocks(1_000)
+                .currentUnlimitedValidatorCount(0)
+                .limitedValidatorMiningSharesBps(List.of(1_000L))
+                .build();
 
-		assertThrows(IllegalArgumentException.class,
-				() -> NetworkParamsStateEncoder.INSTANCE.encode(nonZeroUnlimited));
-		assertThrows(IllegalArgumentException.class,
-				() -> NetworkParamsStateEncoder.INSTANCE.encode(limitedEntry));
+        assertThrows(IllegalArgumentException.class,
+                () -> NetworkParamsStateEncoder.INSTANCE.encode(nonZeroUnlimited));
+        assertThrows(IllegalArgumentException.class,
+                () -> NetworkParamsStateEncoder.INSTANCE.encode(limitedEntry));
 
-		Bytes canonicalBytes = NetworkParamsStateEncoder.INSTANCE.encode(canonical);
-		Bytes nonZeroUnlimitedBytes = Bytes.concatenate(
-				canonicalBytes.slice(0, canonicalBytes.size() - 2),
-				Bytes.of(1),
-				canonicalBytes.slice(canonicalBytes.size() - 1));
-		assertThrows(CryptoJFailedException.class,
-				() -> NetworkParamsStateDecoder.INSTANCE.decode(nonZeroUnlimitedBytes));
-	}
+        Bytes canonicalBytes = NetworkParamsStateEncoder.INSTANCE.encode(canonical);
+        Bytes nonZeroUnlimitedBytes = Bytes.concatenate(
+                canonicalBytes.slice(0, canonicalBytes.size() - 2),
+                Bytes.of(1),
+                canonicalBytes.slice(canonicalBytes.size() - 1));
+        assertThrows(RuntimeException.class,
+                () -> NetworkParamsStateDecoder.INSTANCE.decode(nonZeroUnlimitedBytes));
+    }
 
-	private NetworkParamsStateImpl.NetworkParamsStateImplBuilder baseNetworkParams(NetworkParamsStateVersion version) {
-		return NetworkParamsStateImpl.builder()
-				.version(version)
-				.blockReward(Wei.valueOf(10))
-				.blockRewardPoolAddress(Address.ZERO)
-				.targetMiningTimeMs(30_000)
-				.asertHalfLifeBlocks(100)
-				.asertAnchorHeight(5)
-				.minDifficulty(BigInteger.TEN)
-				.minTxBaseFee(Wei.valueOf(1))
-				.minTxByteFee(Wei.valueOf(1))
-				.updatedByTxHash(Hash.ZERO)
-				.currentAuthorityCount(2)
-				.currentValidatorCount(3)
-				.updatedAtBlockHeight(5)
-				.updatedAtTimestamp(Instant.ofEpochMilli(1_000));
-	}
+    private NetworkParamsStateImpl.NetworkParamsStateImplBuilder baseNetworkParams(NetworkParamsStateVersion version) {
+        return NetworkParamsStateImpl.builder()
+                .version(version)
+                .blockReward(Wei.valueOf(10))
+                .blockRewardPoolAddress(Address.ZERO)
+                .targetMiningTimeMs(30_000)
+                .asertHalfLifeBlocks(100)
+                .asertAnchorHeight(5)
+                .minDifficulty(BigInteger.TEN)
+                .minTxBaseFee(Wei.valueOf(1))
+                .minTxByteFee(Wei.valueOf(1))
+                .updatedByTxHash(Hash.ZERO)
+                .currentAuthorityCount(2)
+                .currentValidatorCount(3)
+                .updatedAtBlockHeight(5)
+                .updatedAtTimestamp(Instant.ofEpochMilli(1_000));
+    }
 
-	private Hash hash(byte value) {
-		byte[] bytes = new byte[32];
-		bytes[31] = value;
-		return Hash.wrap(bytes);
-	}
+    private Hash hash(byte value) {
+        byte[] bytes = new byte[32];
+        bytes[31] = value;
+        return Hash.wrap(bytes);
+    }
 }

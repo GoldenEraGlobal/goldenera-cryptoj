@@ -43,85 +43,86 @@ import global.goldenera.cryptoj.enums.TxVersion;
 
 class TxPayloadVersionSerializationTest {
 
-	private static final Address VALIDATOR = Address.fromHexString("0x1111111111111111111111111111111111111111");
+    private static final Address VALIDATOR = Address.fromHexString("0x1111111111111111111111111111111111111111");
 
-	@Test
-	void preservesHistoricalValidatorAddBytesAsImplicitV1() {
-		Bytes historicalBytes = Bytes.fromHexString("0xd60a941111111111111111111111111111111111111111");
-		TxBipValidatorAddPayload decoded = assertInstanceOf(TxBipValidatorAddPayload.class,
-				TxPayloadDecoder.INSTANCE.decode(historicalBytes, TxVersion.V1));
-		assertEquals(TxPayloadVersion.V1, decoded.getPayloadVersion());
-		assertEquals(VALIDATOR, decoded.getAddress());
-		assertEquals(historicalBytes, TxPayloadEncoder.INSTANCE.encode(decoded, TxVersion.V1));
-	}
+    @Test
+    void preservesHistoricalValidatorAddBytesAsImplicitV1() {
+        Bytes historicalBytes = Bytes.fromHexString("0xd60a941111111111111111111111111111111111111111");
+        TxBipValidatorAddPayload decoded = assertInstanceOf(TxBipValidatorAddPayload.class,
+                TxPayloadDecoder.INSTANCE.decode(historicalBytes, TxVersion.V1));
+        assertEquals(TxPayloadVersion.V1, decoded.getPayloadVersion());
+        assertEquals(VALIDATOR, decoded.getAddress());
+        assertEquals(historicalBytes, TxPayloadEncoder.INSTANCE.encode(decoded, TxVersion.V1));
+    }
 
-	@Test
-	void encodesAndDecodesValidatorAddV2WithExplicitPayloadVersion() {
-		TxBipValidatorAddPayload payload = TxBipValidatorAddPayloadImpl.builder()
-				.payloadVersion(TxPayloadVersion.V2)
-				.address(VALIDATOR)
-				.miningLimitMode(MiningLimitMode.LIMITED)
-				.maxMiningShareBps(3_000L)
-				.build();
-		Bytes expected = Bytes.fromHexString("0xdb0a0294111111111111111111111111111111111111111180820bb8");
-		assertEquals(expected, TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
-		assertEquals(payload, TxPayloadDecoder.INSTANCE.decode(expected, TxVersion.V1));
-	}
+    @Test
+    void encodesAndDecodesValidatorAddV2WithExplicitPayloadVersion() {
+        TxBipValidatorAddPayload payload = TxBipValidatorAddPayloadImpl.builder()
+                .payloadVersion(TxPayloadVersion.V2)
+                .address(VALIDATOR)
+                .miningLimitMode(MiningLimitMode.LIMITED)
+                .maxMiningShareBps(3_000L)
+                .build();
+        Bytes expected = Bytes.fromHexString("0xdb0a0294111111111111111111111111111111111111111180820bb8");
+        assertEquals(expected, TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+        assertEquals(payload, TxPayloadDecoder.INSTANCE.decode(expected, TxVersion.V1));
+    }
 
-	@Test
-	void preservesHistoricalNetworkParamsBytesAndRoundTripsV2() {
-		Bytes v1Bytes = Bytes.fromHexString("0xc804c0c0c0c0c0c0c0");
-		TxBipNetworkParamsSetPayload v1 = assertInstanceOf(TxBipNetworkParamsSetPayload.class,
-				TxPayloadDecoder.INSTANCE.decode(v1Bytes, TxVersion.V1));
-		assertEquals(TxPayloadVersion.V1, v1.getPayloadVersion());
-		assertEquals(v1Bytes, TxPayloadEncoder.INSTANCE.encode(v1, TxVersion.V1));
+    @Test
+    void preservesHistoricalNetworkParamsBytesAndRoundTripsV2() {
+        Bytes v1Bytes = Bytes.fromHexString("0xc804c0c0c0c0c0c0c0");
+        TxBipNetworkParamsSetPayload v1 = assertInstanceOf(TxBipNetworkParamsSetPayload.class,
+                TxPayloadDecoder.INSTANCE.decode(v1Bytes, TxVersion.V1));
+        assertEquals(TxPayloadVersion.V1, v1.getPayloadVersion());
+        assertEquals(v1Bytes, TxPayloadEncoder.INSTANCE.encode(v1, TxVersion.V1));
 
-		TxBipNetworkParamsSetPayload v2 = TxBipNetworkParamsSetPayloadImpl.builder()
-				.payloadVersion(TxPayloadVersion.V2)
-				.validatorMiningWindowBlocks(100L)
-				.build();
-		Bytes v2Bytes = Bytes.fromHexString("0xcb0402c0c0c0c0c0c0c0c164");
-		assertEquals(v2Bytes, TxPayloadEncoder.INSTANCE.encode(v2, TxVersion.V1));
-		assertEquals(v2, TxPayloadDecoder.INSTANCE.decode(v2Bytes, TxVersion.V1));
+        TxBipNetworkParamsSetPayload v2 = TxBipNetworkParamsSetPayloadImpl.builder()
+                .payloadVersion(TxPayloadVersion.V2)
+                .validatorMiningWindowBlocks(100L)
+                .miningRewardVestingBlocks(86_400L)
+                .build();
+        Bytes v2Bytes = Bytes.fromHexString("0xd00402c0c0c0c0c0c0c0c164c483015180");
+        assertEquals(v2Bytes, TxPayloadEncoder.INSTANCE.encode(v2, TxVersion.V1));
+        assertEquals(v2, TxPayloadDecoder.INSTANCE.decode(v2Bytes, TxVersion.V1));
 
-		TxBipNetworkParamsSetPayload v2WithoutResize = TxBipNetworkParamsSetPayloadImpl.builder()
-				.payloadVersion(TxPayloadVersion.V2)
-				.build();
-		Bytes v2WithoutResizeBytes = Bytes.fromHexString("0xca0402c0c0c0c0c0c0c0c0");
-		assertEquals(v2WithoutResizeBytes,
-				TxPayloadEncoder.INSTANCE.encode(v2WithoutResize, TxVersion.V1));
-		assertEquals(v2WithoutResize,
-				TxPayloadDecoder.INSTANCE.decode(v2WithoutResizeBytes, TxVersion.V1));
-	}
+        TxBipNetworkParamsSetPayload v2WithoutResize = TxBipNetworkParamsSetPayloadImpl.builder()
+                .payloadVersion(TxPayloadVersion.V2)
+                .build();
+        Bytes v2WithoutResizeBytes = Bytes.fromHexString("0xcb0402c0c0c0c0c0c0c0c0c0");
+        assertEquals(v2WithoutResizeBytes,
+                TxPayloadEncoder.INSTANCE.encode(v2WithoutResize, TxVersion.V1));
+        assertEquals(v2WithoutResize,
+                TxPayloadDecoder.INSTANCE.decode(v2WithoutResizeBytes, TxVersion.V1));
+    }
 
-	@Test
-	void structurallyRoundTripsOutOfRangeWindowForNodeConsensusRejection() {
-		TxBipNetworkParamsSetPayload invalid = TxBipNetworkParamsSetPayloadImpl.builder()
-				.payloadVersion(TxPayloadVersion.V2)
-				.validatorMiningWindowBlocks(10_001L)
-				.build();
+    @Test
+    void structurallyRoundTripsOutOfRangeWindowForNodeConsensusRejection() {
+        TxBipNetworkParamsSetPayload invalid = TxBipNetworkParamsSetPayloadImpl.builder()
+                .payloadVersion(TxPayloadVersion.V2)
+                .validatorMiningWindowBlocks(10_001L)
+                .build();
 
-		Bytes encoded = TxPayloadEncoder.INSTANCE.encode(invalid, TxVersion.V1);
+        Bytes encoded = TxPayloadEncoder.INSTANCE.encode(invalid, TxVersion.V1);
 
-		assertEquals(invalid, TxPayloadDecoder.INSTANCE.decode(encoded, TxVersion.V1));
-	}
+        assertEquals(invalid, TxPayloadDecoder.INSTANCE.decode(encoded, TxVersion.V1));
+    }
 
-	@Test
-	void roundTripsNewPolicyPayloadAndRejectsNonCanonicalPolicy() {
-		TxBipValidatorMiningPolicySetPayload payload = TxBipValidatorMiningPolicySetPayloadImpl.builder()
-				.validatorAddress(VALIDATOR)
-				.miningLimitMode(MiningLimitMode.UNLIMITED)
-				.maxMiningShareBps(0)
-				.build();
-		Bytes expected = Bytes.fromHexString("0xd90c019411111111111111111111111111111111111111110180");
-		assertEquals(expected, TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
-		assertEquals(payload, TxPayloadDecoder.INSTANCE.decode(expected, TxVersion.V1));
+    @Test
+    void roundTripsNewPolicyPayloadAndRejectsNonCanonicalPolicy() {
+        TxBipValidatorMiningPolicySetPayload payload = TxBipValidatorMiningPolicySetPayloadImpl.builder()
+                .validatorAddress(VALIDATOR)
+                .miningLimitMode(MiningLimitMode.UNLIMITED)
+                .maxMiningShareBps(0)
+                .build();
+        Bytes expected = Bytes.fromHexString("0xd90c019411111111111111111111111111111111111111110180");
+        assertEquals(expected, TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+        assertEquals(payload, TxPayloadDecoder.INSTANCE.decode(expected, TxVersion.V1));
 
-		TxBipValidatorMiningPolicySetPayload invalid = TxBipValidatorMiningPolicySetPayloadImpl.builder()
-				.validatorAddress(VALIDATOR)
-				.miningLimitMode(MiningLimitMode.UNLIMITED)
-				.maxMiningShareBps(1)
-				.build();
-		assertThrows(RuntimeException.class, () -> TxPayloadEncoder.INSTANCE.encode(invalid, TxVersion.V1));
-	}
+        TxBipValidatorMiningPolicySetPayload invalid = TxBipValidatorMiningPolicySetPayloadImpl.builder()
+                .validatorAddress(VALIDATOR)
+                .miningLimitMode(MiningLimitMode.UNLIMITED)
+                .maxMiningShareBps(1)
+                .build();
+        assertThrows(RuntimeException.class, () -> TxPayloadEncoder.INSTANCE.encode(invalid, TxVersion.V1));
+    }
 }

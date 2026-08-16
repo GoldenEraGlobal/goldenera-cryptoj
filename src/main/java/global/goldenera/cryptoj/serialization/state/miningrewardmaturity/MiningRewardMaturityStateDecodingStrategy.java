@@ -21,20 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
+package global.goldenera.cryptoj.serialization.state.miningrewardmaturity;
 
-import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
-import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
-import global.goldenera.rlp.RLPOutput;
+import global.goldenera.cryptoj.common.state.MiningRewardMaturityState;
+import global.goldenera.rlp.RLPInput;
 
-public class TxNetworkParamsSetV2EncodingStrategy implements TxPayloadEncodingStrategy<TxBipNetworkParamsSetPayload> {
+public interface MiningRewardMaturityStateDecodingStrategy {
 
-    private final TxNetworkParamsSetEncodingStrategy legacyFields = new TxNetworkParamsSetEncodingStrategy();
-
-    @Override
-    public void encode(RLPOutput out, TxBipNetworkParamsSetPayload payload) {
-        legacyFields.encode(out, payload);
-        out.writeOptionalLongScalar(payload.getValidatorMiningWindowBlocks());
-        out.writeOptionalLongScalar(payload.getMiningRewardVestingBlocks());
-    }
+    MiningRewardMaturityState decode(RLPInput input);
 }

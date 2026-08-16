@@ -165,7 +165,7 @@ public class TxPayloadDecoder {
 		}
 		int expectedFields = switch (type) {
 			case BIP_VALIDATOR_ADD -> 5;
-			case BIP_NETWORK_PARAMS_SET -> 10;
+			case BIP_NETWORK_PARAMS_SET -> 11;
 			case BIP_VALIDATOR_MINING_POLICY_SET -> 5;
 			default -> throw new CryptoJFailedException("Invalid versioned payload shape for " + type);
 		};

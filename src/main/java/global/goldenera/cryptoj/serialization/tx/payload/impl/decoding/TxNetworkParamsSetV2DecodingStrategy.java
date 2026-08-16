@@ -37,27 +37,29 @@ import global.goldenera.rlp.RLPInput;
 
 public class TxNetworkParamsSetV2DecodingStrategy implements TxPayloadDecodingStrategy<TxBipNetworkParamsSetPayload> {
 
-	@Override
-	public TxBipNetworkParamsSetPayload decode(RLPInput input) {
-		Wei blockReward = input.readOptionalWeiScalar();
-		Bytes addressBytes = input.readOptionalBytes();
-		Address blockRewardPoolAddress = addressBytes == null ? null : Address.wrap(addressBytes);
-		Long targetMiningTimeMs = input.readOptionalLongScalar();
-		Long asertHalfLifeBlocks = input.readOptionalLongScalar();
-		BigInteger minDifficulty = input.readOptionalBigIntegerScalar();
-		Wei minTxBaseFee = input.readOptionalWeiScalar();
-		Wei minTxByteFee = input.readOptionalWeiScalar();
-		Long validatorMiningWindowBlocks = input.readOptionalLongScalar();
-		return TxBipNetworkParamsSetPayloadImpl.builder()
-				.payloadVersion(TxPayloadVersion.V2)
-				.blockReward(blockReward)
-				.blockRewardPoolAddress(blockRewardPoolAddress)
-				.targetMiningTimeMs(targetMiningTimeMs)
-				.asertHalfLifeBlocks(asertHalfLifeBlocks)
-				.minDifficulty(minDifficulty)
-				.minTxBaseFee(minTxBaseFee)
-				.minTxByteFee(minTxByteFee)
-				.validatorMiningWindowBlocks(validatorMiningWindowBlocks)
-				.build();
-	}
+    @Override
+    public TxBipNetworkParamsSetPayload decode(RLPInput input) {
+        Wei blockReward = input.readOptionalWeiScalar();
+        Bytes addressBytes = input.readOptionalBytes();
+        Address blockRewardPoolAddress = addressBytes == null ? null : Address.wrap(addressBytes);
+        Long targetMiningTimeMs = input.readOptionalLongScalar();
+        Long asertHalfLifeBlocks = input.readOptionalLongScalar();
+        BigInteger minDifficulty = input.readOptionalBigIntegerScalar();
+        Wei minTxBaseFee = input.readOptionalWeiScalar();
+        Wei minTxByteFee = input.readOptionalWeiScalar();
+        Long validatorMiningWindowBlocks = input.readOptionalLongScalar();
+        Long miningRewardVestingBlocks = input.readOptionalLongScalar();
+        return TxBipNetworkParamsSetPayloadImpl.builder()
+                .payloadVersion(TxPayloadVersion.V2)
+                .blockReward(blockReward)
+                .blockRewardPoolAddress(blockRewardPoolAddress)
+                .targetMiningTimeMs(targetMiningTimeMs)
+                .asertHalfLifeBlocks(asertHalfLifeBlocks)
+                .minDifficulty(minDifficulty)
+                .minTxBaseFee(minTxBaseFee)
+                .minTxByteFee(minTxByteFee)
+                .validatorMiningWindowBlocks(validatorMiningWindowBlocks)
+                .miningRewardVestingBlocks(miningRewardVestingBlocks)
+                .build();
+    }
 }

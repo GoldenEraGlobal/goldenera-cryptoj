@@ -21,20 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
+package global.goldenera.cryptoj.enums.state;
 
-import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
-import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
-import global.goldenera.rlp.RLPOutput;
+import static lombok.AccessLevel.PRIVATE;
 
-public class TxNetworkParamsSetV2EncodingStrategy implements TxPayloadEncodingStrategy<TxBipNetworkParamsSetPayload> {
+import java.util.Arrays;
+import java.util.Comparator;
 
-    private final TxNetworkParamsSetEncodingStrategy legacyFields = new TxNetworkParamsSetEncodingStrategy();
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
-    @Override
-    public void encode(RLPOutput out, TxBipNetworkParamsSetPayload payload) {
-        legacyFields.encode(out, payload);
-        out.writeOptionalLongScalar(payload.getValidatorMiningWindowBlocks());
-        out.writeOptionalLongScalar(payload.getMiningRewardVestingBlocks());
-    }
+@AllArgsConstructor
+@Getter
+@FieldDefaults(level = PRIVATE, makeFinal = true)
+public enum MiningRewardMaturityStateVersion {
+	V1(1);
+
+	int code;
+
+	public static MiningRewardMaturityStateVersion fromCode(int code) {
+		for (MiningRewardMaturityStateVersion version : values()) {
+			if (version.getCode() == code) {
+				return version;
+			}
+		}
+		throw new CryptoJFailedException("Unknown MiningRewardMaturityStateVersion code: " + code);
+	}
+
+	public static MiningRewardMaturityStateVersion getLatest() {
+		return Arrays.stream(values())
+				.max(Comparator.comparingInt(MiningRewardMaturityStateVersion::getCode))
+				.orElseThrow(() -> new CryptoJFailedException("No MiningRewardMaturityStateVersion defined"));
+	}
 }

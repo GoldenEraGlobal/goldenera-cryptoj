@@ -29,43 +29,52 @@ import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 /** Canonical consensus limits shared by payload, state and node validation. */
 public final class MiningConsensusRules {
 
-	public static final long BASIS_POINTS_DENOMINATOR = 10_000;
-	public static final long MAX_VALIDATOR_MINING_SHARE_BPS = 4_000;
-	public static final long MIN_VALIDATOR_MINING_WINDOW_BLOCKS = 100;
-	public static final long MAX_VALIDATOR_MINING_WINDOW_BLOCKS = 10_000;
+    public static final long BASIS_POINTS_DENOMINATOR = 10_000;
+    public static final long MAX_VALIDATOR_MINING_SHARE_BPS = 4_000;
+    public static final long MIN_VALIDATOR_MINING_WINDOW_BLOCKS = 100;
+    public static final long MAX_VALIDATOR_MINING_WINDOW_BLOCKS = 10_000;
+    public static final long MAX_MINING_REWARD_VESTING_BLOCKS = 1_000_000;
 
-	private MiningConsensusRules() {
-	}
+    private MiningConsensusRules() {
+    }
 
-	public static void validatePolicy(MiningLimitMode mode, long maxMiningShareBps) {
-		if (mode == null) {
-			throw new CryptoJFailedException("Mining limit mode cannot be null");
-		}
-		if (mode == MiningLimitMode.UNLIMITED && maxMiningShareBps != 0) {
-			throw new CryptoJFailedException("UNLIMITED mining policy requires maxMiningShareBps = 0");
-		}
-		if (mode == MiningLimitMode.LIMITED
-				&& (maxMiningShareBps < 1 || maxMiningShareBps > MAX_VALIDATOR_MINING_SHARE_BPS)) {
-			throw new CryptoJFailedException(
-					"LIMITED mining policy requires maxMiningShareBps in range 1.."
-							+ MAX_VALIDATOR_MINING_SHARE_BPS);
-		}
-	}
+    public static void validatePolicy(MiningLimitMode mode, long maxMiningShareBps) {
+        if (mode == null) {
+            throw new CryptoJFailedException("Mining limit mode cannot be null");
+        }
+        if (mode == MiningLimitMode.UNLIMITED && maxMiningShareBps != 0) {
+            throw new CryptoJFailedException("UNLIMITED mining policy requires maxMiningShareBps = 0");
+        }
+        if (mode == MiningLimitMode.LIMITED
+                && (maxMiningShareBps < 1 || maxMiningShareBps > MAX_VALIDATOR_MINING_SHARE_BPS)) {
+            throw new CryptoJFailedException(
+                    "LIMITED mining policy requires maxMiningShareBps in range 1.."
+                            + MAX_VALIDATOR_MINING_SHARE_BPS);
+        }
+    }
 
-	public static void validateWindowSize(long validatorMiningWindowBlocks) {
-		if (validatorMiningWindowBlocks < MIN_VALIDATOR_MINING_WINDOW_BLOCKS
-				|| validatorMiningWindowBlocks > MAX_VALIDATOR_MINING_WINDOW_BLOCKS) {
-			throw new CryptoJFailedException("validatorMiningWindowBlocks must be in range "
-					+ MIN_VALIDATOR_MINING_WINDOW_BLOCKS + ".." + MAX_VALIDATOR_MINING_WINDOW_BLOCKS);
-		}
-	}
+    public static void validateWindowSize(long validatorMiningWindowBlocks) {
+        if (validatorMiningWindowBlocks < MIN_VALIDATOR_MINING_WINDOW_BLOCKS
+                || validatorMiningWindowBlocks > MAX_VALIDATOR_MINING_WINDOW_BLOCKS) {
+            throw new CryptoJFailedException("validatorMiningWindowBlocks must be in range "
+                    + MIN_VALIDATOR_MINING_WINDOW_BLOCKS + ".." + MAX_VALIDATOR_MINING_WINDOW_BLOCKS);
+        }
+    }
 
-	public static void validateLimitedPolicyForWindow(long validatorMiningWindowBlocks, long maxMiningShareBps) {
-		validateWindowSize(validatorMiningWindowBlocks);
-		validatePolicy(MiningLimitMode.LIMITED, maxMiningShareBps);
-		if (validatorMiningWindowBlocks * maxMiningShareBps < BASIS_POINTS_DENOMINATOR) {
-			throw new CryptoJFailedException(
-					"LIMITED mining policy must allow at least one block in the configured window");
-		}
-	}
+    public static void validateMiningRewardVestingBlocks(long miningRewardVestingBlocks) {
+        if (miningRewardVestingBlocks < 0
+                || miningRewardVestingBlocks > MAX_MINING_REWARD_VESTING_BLOCKS) {
+            throw new CryptoJFailedException("miningRewardVestingBlocks must be in range 0.."
+                    + MAX_MINING_REWARD_VESTING_BLOCKS);
+        }
+    }
+
+    public static void validateLimitedPolicyForWindow(long validatorMiningWindowBlocks, long maxMiningShareBps) {
+        validateWindowSize(validatorMiningWindowBlocks);
+        validatePolicy(MiningLimitMode.LIMITED, maxMiningShareBps);
+        if (validatorMiningWindowBlocks * maxMiningShareBps < BASIS_POINTS_DENOMINATOR) {
+            throw new CryptoJFailedException(
+                    "LIMITED mining policy must allow at least one block in the configured window");
+        }
+    }
 }

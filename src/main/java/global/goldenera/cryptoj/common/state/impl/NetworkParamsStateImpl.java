@@ -42,123 +42,132 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class NetworkParamsStateImpl implements NetworkParamsState {
 
-	public static final NetworkParamsState ZERO = NetworkParamsStateImpl.builder()
-			.version(NetworkParamsStateVersion.V1)
-			.blockReward(Wei.ZERO)
-			.blockRewardPoolAddress(Address.ZERO)
-			.targetMiningTimeMs(0)
-			.asertHalfLifeBlocks(0)
-			.asertAnchorHeight(0)
-			.minDifficulty(BigInteger.ZERO)
-			.minTxBaseFee(Wei.ZERO)
-			.minTxByteFee(Wei.ZERO)
-			.updatedByTxHash(Hash.ZERO)
-			.currentAuthorityCount(0)
-			.updatedAtBlockHeight(Long.MIN_VALUE)
-			.updatedAtTimestamp(Instant.EPOCH)
-			.build();
+    public static final NetworkParamsState ZERO = NetworkParamsStateImpl.builder()
+            .version(NetworkParamsStateVersion.V1)
+            .blockReward(Wei.ZERO)
+            .blockRewardPoolAddress(Address.ZERO)
+            .targetMiningTimeMs(0)
+            .asertHalfLifeBlocks(0)
+            .asertAnchorHeight(0)
+            .minDifficulty(BigInteger.ZERO)
+            .minTxBaseFee(Wei.ZERO)
+            .minTxByteFee(Wei.ZERO)
+            .updatedByTxHash(Hash.ZERO)
+            .currentAuthorityCount(0)
+            .updatedAtBlockHeight(Long.MIN_VALUE)
+            .updatedAtTimestamp(Instant.EPOCH)
+            .build();
 
-	NetworkParamsStateVersion version;
-	Wei blockReward;
-	Address blockRewardPoolAddress;
-	long targetMiningTimeMs;
-	long asertHalfLifeBlocks;
-	long asertAnchorHeight;
-	BigInteger minDifficulty;
-	Wei minTxBaseFee;
-	Wei minTxByteFee;
+    NetworkParamsStateVersion version;
+    Wei blockReward;
+    Address blockRewardPoolAddress;
+    long targetMiningTimeMs;
+    long asertHalfLifeBlocks;
+    long asertAnchorHeight;
+    BigInteger minDifficulty;
+    Wei minTxBaseFee;
+    Wei minTxByteFee;
 
-	// Hash of the transaction that LAST MODIFIED these parameters.
-	Hash updatedByTxHash;
+    // Hash of the transaction that LAST MODIFIED these parameters.
+    Hash updatedByTxHash;
 
-	long currentAuthorityCount;
-	long currentValidatorCount;
-	long currentUnlimitedValidatorCount;
-	long validatorMiningWindowBlocks;
-	@Singular("limitedValidatorMiningShareBps")
-	List<Long> limitedValidatorMiningSharesBps;
-	long updatedAtBlockHeight;
-	Instant updatedAtTimestamp;
+    long currentAuthorityCount;
+    long currentValidatorCount;
+    long currentUnlimitedValidatorCount;
+    long validatorMiningWindowBlocks;
+    long miningRewardVestingBlocks;
+    @Singular("limitedValidatorMiningShareBps")
+    List<Long> limitedValidatorMiningSharesBps;
+    long updatedAtBlockHeight;
+    Instant updatedAtTimestamp;
 
-	@Override
-	public long getCurrentUnlimitedValidatorCount() {
-		return version == NetworkParamsStateVersion.V1 ? currentValidatorCount : currentUnlimitedValidatorCount;
-	}
+    @Override
+    public long getCurrentUnlimitedValidatorCount() {
+        return version == NetworkParamsStateVersion.V1 ? currentValidatorCount : currentUnlimitedValidatorCount;
+    }
 
-	@Override
-	public long getValidatorMiningWindowBlocks() {
-		return version == NetworkParamsStateVersion.V1 ? 0 : validatorMiningWindowBlocks;
-	}
+    @Override
+    public long getValidatorMiningWindowBlocks() {
+        return version == NetworkParamsStateVersion.V1 ? 0 : validatorMiningWindowBlocks;
+    }
 
-	@Override
-	public List<Long> getLimitedValidatorMiningSharesBps() {
-		return version == NetworkParamsStateVersion.V1 ? List.of() : List.copyOf(limitedValidatorMiningSharesBps);
-	}
+    @Override
+    public long getMiningRewardVestingBlocks() {
+        return version == NetworkParamsStateVersion.V1 ? 0 : miningRewardVestingBlocks;
+    }
 
-	public NetworkParamsStateImpl incrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {
-		return this.toBuilder()
-				.currentAuthorityCount(this.currentAuthorityCount + 1)
-				.updatedByTxHash(txHash)
-				.updatedAtBlockHeight(blockHeight)
-				.updatedAtTimestamp(time)
-				.build();
-	}
+    @Override
+    public List<Long> getLimitedValidatorMiningSharesBps() {
+        return version == NetworkParamsStateVersion.V1 ? List.of() : List.copyOf(limitedValidatorMiningSharesBps);
+    }
 
-	public NetworkParamsStateImpl decrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {
-		if (this.currentAuthorityCount <= 1) {
-			throw new IllegalStateException("Cannot remove last authority");
-		}
-		return this.toBuilder()
-				.currentAuthorityCount(this.currentAuthorityCount - 1)
-				.updatedByTxHash(txHash)
-				.updatedAtBlockHeight(blockHeight)
-				.updatedAtTimestamp(time)
-				.build();
-	}
+    public NetworkParamsStateImpl incrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {
+        return this.toBuilder()
+                .currentAuthorityCount(this.currentAuthorityCount + 1)
+                .updatedByTxHash(txHash)
+                .updatedAtBlockHeight(blockHeight)
+                .updatedAtTimestamp(time)
+                .build();
+    }
 
-	public NetworkParamsStateImpl incrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
-		return this.toBuilder()
-				.currentValidatorCount(this.currentValidatorCount + 1)
-				.updatedByTxHash(txHash)
-				.updatedAtBlockHeight(blockHeight)
-				.updatedAtTimestamp(time)
-				.build();
-	}
+    public NetworkParamsStateImpl decrementAuthorityCount(Hash txHash, long blockHeight, Instant time) {
+        if (this.currentAuthorityCount <= 1) {
+            throw new IllegalStateException("Cannot remove last authority");
+        }
+        return this.toBuilder()
+                .currentAuthorityCount(this.currentAuthorityCount - 1)
+                .updatedByTxHash(txHash)
+                .updatedAtBlockHeight(blockHeight)
+                .updatedAtTimestamp(time)
+                .build();
+    }
 
-	public NetworkParamsStateImpl decrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
-		if (this.currentValidatorCount <= 0) {
-			throw new IllegalStateException("Cannot be less than 0");
-		}
-		return this.toBuilder()
-				.currentValidatorCount(this.currentValidatorCount - 1)
-				.updatedByTxHash(txHash)
-				.updatedAtBlockHeight(blockHeight)
-				.updatedAtTimestamp(time)
-				.build();
-	}
+    public NetworkParamsStateImpl incrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
+        return this.toBuilder()
+                .currentValidatorCount(this.currentValidatorCount + 1)
+                .updatedByTxHash(txHash)
+                .updatedAtBlockHeight(blockHeight)
+                .updatedAtTimestamp(time)
+                .build();
+    }
 
-	public NetworkParamsStateImpl updateParams(TxBipNetworkParamsSetPayload p, Hash txHash, long blockHeight,
-			Instant time) {
-		boolean changeAsertAnchorHeight = p.getAsertHalfLifeBlocks() != null || p.getTargetMiningTimeMs() != null;
+    public NetworkParamsStateImpl decrementValidatorCount(Hash txHash, long blockHeight, Instant time) {
+        if (this.currentValidatorCount <= 0) {
+            throw new IllegalStateException("Cannot be less than 0");
+        }
+        return this.toBuilder()
+                .currentValidatorCount(this.currentValidatorCount - 1)
+                .updatedByTxHash(txHash)
+                .updatedAtBlockHeight(blockHeight)
+                .updatedAtTimestamp(time)
+                .build();
+    }
 
-		return this.toBuilder()
-				.blockReward(p.getBlockReward() != null ? p.getBlockReward() : this.blockReward)
-				.blockRewardPoolAddress(p.getBlockRewardPoolAddress() != null ? p.getBlockRewardPoolAddress()
-						: this.blockRewardPoolAddress)
-				.targetMiningTimeMs(
-						p.getTargetMiningTimeMs() != null ? p.getTargetMiningTimeMs() : this.targetMiningTimeMs)
-				.asertHalfLifeBlocks(
-						p.getAsertHalfLifeBlocks() != null ? p.getAsertHalfLifeBlocks() : this.asertHalfLifeBlocks)
-				.asertAnchorHeight(changeAsertAnchorHeight ? blockHeight : this.asertAnchorHeight)
-				.minDifficulty(p.getMinDifficulty() != null ? p.getMinDifficulty() : this.minDifficulty)
-				.minTxBaseFee(p.getMinTxBaseFee() != null ? p.getMinTxBaseFee() : this.minTxBaseFee)
-				.minTxByteFee(p.getMinTxByteFee() != null ? p.getMinTxByteFee() : this.minTxByteFee)
-				.validatorMiningWindowBlocks(p.getValidatorMiningWindowBlocks() != null
-						? p.getValidatorMiningWindowBlocks()
-						: this.validatorMiningWindowBlocks)
-				.updatedByTxHash(txHash)
-				.updatedAtBlockHeight(blockHeight)
-				.updatedAtTimestamp(time)
-				.build();
-	}
+    public NetworkParamsStateImpl updateParams(TxBipNetworkParamsSetPayload p, Hash txHash, long blockHeight,
+            Instant time) {
+        boolean changeAsertAnchorHeight = p.getAsertHalfLifeBlocks() != null || p.getTargetMiningTimeMs() != null;
+
+        return this.toBuilder()
+                .blockReward(p.getBlockReward() != null ? p.getBlockReward() : this.blockReward)
+                .blockRewardPoolAddress(p.getBlockRewardPoolAddress() != null ? p.getBlockRewardPoolAddress()
+                        : this.blockRewardPoolAddress)
+                .targetMiningTimeMs(
+                        p.getTargetMiningTimeMs() != null ? p.getTargetMiningTimeMs() : this.targetMiningTimeMs)
+                .asertHalfLifeBlocks(
+                        p.getAsertHalfLifeBlocks() != null ? p.getAsertHalfLifeBlocks() : this.asertHalfLifeBlocks)
+                .asertAnchorHeight(changeAsertAnchorHeight ? blockHeight : this.asertAnchorHeight)
+                .minDifficulty(p.getMinDifficulty() != null ? p.getMinDifficulty() : this.minDifficulty)
+                .minTxBaseFee(p.getMinTxBaseFee() != null ? p.getMinTxBaseFee() : this.minTxBaseFee)
+                .minTxByteFee(p.getMinTxByteFee() != null ? p.getMinTxByteFee() : this.minTxByteFee)
+                .validatorMiningWindowBlocks(p.getValidatorMiningWindowBlocks() != null
+                        ? p.getValidatorMiningWindowBlocks()
+                        : this.validatorMiningWindowBlocks)
+                .miningRewardVestingBlocks(p.getMiningRewardVestingBlocks() != null
+                        ? p.getMiningRewardVestingBlocks()
+                        : this.miningRewardVestingBlocks)
+                .updatedByTxHash(txHash)
+                .updatedAtBlockHeight(blockHeight)
+                .updatedAtTimestamp(time)
+                .build();
+    }
 }

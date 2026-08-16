@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
+import global.goldenera.cryptoj.common.MiningConsensusRules;
 import global.goldenera.cryptoj.enums.MiningLimitMode;
 import global.goldenera.cryptoj.enums.TxPayloadType;
 import global.goldenera.cryptoj.enums.TxPayloadVersion;
@@ -38,35 +39,40 @@ import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 
 class MiningConsensusRulesTest {
 
-	@Test
-	void acceptsCanonicalBoundariesAndRejectsOutsideValues() {
-		assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 1));
-		assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 4_000));
-		assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.UNLIMITED, 0));
-		assertThrows(RuntimeException.class,
-				() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 0));
-		assertThrows(RuntimeException.class,
-				() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 4_001));
-		assertThrows(RuntimeException.class,
-				() -> MiningConsensusRules.validatePolicy(MiningLimitMode.UNLIMITED, 1));
+    @Test
+    void acceptsCanonicalBoundariesAndRejectsOutsideValues() {
+        assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 1));
+        assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 4_000));
+        assertDoesNotThrow(() -> MiningConsensusRules.validatePolicy(MiningLimitMode.UNLIMITED, 0));
+        assertThrows(RuntimeException.class,
+                () -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 0));
+        assertThrows(RuntimeException.class,
+                () -> MiningConsensusRules.validatePolicy(MiningLimitMode.LIMITED, 4_001));
+        assertThrows(RuntimeException.class,
+                () -> MiningConsensusRules.validatePolicy(MiningLimitMode.UNLIMITED, 1));
 
-		assertDoesNotThrow(() -> MiningConsensusRules.validateWindowSize(100));
-		assertDoesNotThrow(() -> MiningConsensusRules.validateWindowSize(10_000));
-		assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateWindowSize(99));
-		assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateWindowSize(10_001));
-	}
+        assertDoesNotThrow(() -> MiningConsensusRules.validateWindowSize(100));
+        assertDoesNotThrow(() -> MiningConsensusRules.validateWindowSize(10_000));
+        assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateWindowSize(99));
+        assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateWindowSize(10_001));
 
-	@Test
-	void protocolNumericCodesAreStable() {
-		assertEquals(0, MiningLimitMode.LIMITED.getCode());
-		assertEquals(1, MiningLimitMode.UNLIMITED.getCode());
-		assertEquals(1, TxPayloadVersion.V1.getCode());
-		assertEquals(2, TxPayloadVersion.V2.getCode());
-		assertEquals(1, ValidatorStateVersion.V1.getCode());
-		assertEquals(2, ValidatorStateVersion.V2.getCode());
-		assertEquals(1, NetworkParamsStateVersion.V1.getCode());
-		assertEquals(2, NetworkParamsStateVersion.V2.getCode());
-		assertEquals(12, TxPayloadType.BIP_VALIDATOR_MINING_POLICY_SET.getCode());
-		assertEquals(11, BipType.VALIDATOR_MINING_POLICY_SET.getCode());
-	}
+        assertDoesNotThrow(() -> MiningConsensusRules.validateMiningRewardVestingBlocks(0));
+        assertDoesNotThrow(() -> MiningConsensusRules.validateMiningRewardVestingBlocks(1_000_000));
+        assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateMiningRewardVestingBlocks(-1));
+        assertThrows(RuntimeException.class, () -> MiningConsensusRules.validateMiningRewardVestingBlocks(1_000_001));
+    }
+
+    @Test
+    void protocolNumericCodesAreStable() {
+        assertEquals(0, MiningLimitMode.LIMITED.getCode());
+        assertEquals(1, MiningLimitMode.UNLIMITED.getCode());
+        assertEquals(1, TxPayloadVersion.V1.getCode());
+        assertEquals(2, TxPayloadVersion.V2.getCode());
+        assertEquals(1, ValidatorStateVersion.V1.getCode());
+        assertEquals(2, ValidatorStateVersion.V2.getCode());
+        assertEquals(1, NetworkParamsStateVersion.V1.getCode());
+        assertEquals(2, NetworkParamsStateVersion.V2.getCode());
+        assertEquals(12, TxPayloadType.BIP_VALIDATOR_MINING_POLICY_SET.getCode());
+        assertEquals(11, BipType.VALIDATOR_MINING_POLICY_SET.getCode());
+    }
 }

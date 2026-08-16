@@ -41,63 +41,66 @@ import global.goldenera.rlp.RLPInput;
 
 public class NetworkParamsStateV2DecodingStrategy implements NetworkParamsStateDecodingStrategy {
 
-	@Override
-	public NetworkParamsState decode(RLPInput input) {
-		Wei blockReward = Wei.valueOf(input.readBigIntegerScalar());
-		Address blockRewardPoolAddress = Address.wrap(input.readBytes());
-		long targetMiningTimeMs = input.readLongScalar();
-		long asertHalfLifeBlocks = input.readLongScalar();
-		long asertAnchorHeight = input.readLongScalar();
-		BigInteger minDifficulty = input.readBigIntegerScalar();
-		Wei minTxBaseFee = Wei.valueOf(input.readBigIntegerScalar());
-		Wei minTxByteFee = Wei.valueOf(input.readBigIntegerScalar());
-		Hash updatedByTxHash = Hash.wrap(input.readBytes32());
-		long currentAuthorityCount = input.readLongScalar();
-		long currentValidatorCount = input.readLongScalar();
-		long updatedAtBlockHeight = input.readLongScalar();
-		Instant updatedAtTimestamp = Instant.ofEpochMilli(input.readLongScalar());
-		long validatorMiningWindowBlocks = input.readLongScalar();
-		long currentUnlimitedValidatorCount = input.readLongScalar();
-		List<Long> limitedValidatorMiningSharesBps = input.readList(listInput -> listInput.readLongScalar());
-		MiningConsensusRules.validateWindowSize(validatorMiningWindowBlocks);
-		if (currentValidatorCount == 0 && currentUnlimitedValidatorCount != 0) {
-			throw new CryptoJFailedException(
-					"A zero-validator set requires currentUnlimitedValidatorCount = 0");
-		}
-		if (currentValidatorCount != 0
-				&& (currentUnlimitedValidatorCount < 1 || currentUnlimitedValidatorCount > currentValidatorCount)) {
-			throw new CryptoJFailedException(
-					"A non-empty validator set requires currentUnlimitedValidatorCount in range 1..currentValidatorCount");
-		}
-		if (limitedValidatorMiningSharesBps.size() != currentValidatorCount - currentUnlimitedValidatorCount) {
-			throw new CryptoJFailedException("LIMITED validator policy summary is inconsistent");
-		}
-		long previous = 0;
-		for (long bps : limitedValidatorMiningSharesBps) {
-			MiningConsensusRules.validateLimitedPolicyForWindow(validatorMiningWindowBlocks, bps);
-			if (bps < previous) {
-				throw new CryptoJFailedException("LIMITED validator policy summary must be sorted");
-			}
-			previous = bps;
-		}
-		return NetworkParamsStateImpl.builder()
-				.version(NetworkParamsStateVersion.V2)
-				.blockReward(blockReward)
-				.blockRewardPoolAddress(blockRewardPoolAddress)
-				.targetMiningTimeMs(targetMiningTimeMs)
-				.asertHalfLifeBlocks(asertHalfLifeBlocks)
-				.asertAnchorHeight(asertAnchorHeight)
-				.minDifficulty(minDifficulty)
-				.minTxBaseFee(minTxBaseFee)
-				.minTxByteFee(minTxByteFee)
-				.updatedByTxHash(updatedByTxHash)
-				.currentAuthorityCount(currentAuthorityCount)
-				.currentValidatorCount(currentValidatorCount)
-				.validatorMiningWindowBlocks(validatorMiningWindowBlocks)
-				.currentUnlimitedValidatorCount(currentUnlimitedValidatorCount)
-				.limitedValidatorMiningSharesBps(limitedValidatorMiningSharesBps)
-				.updatedAtBlockHeight(updatedAtBlockHeight)
-				.updatedAtTimestamp(updatedAtTimestamp)
-				.build();
-	}
+    @Override
+    public NetworkParamsState decode(RLPInput input) {
+        Wei blockReward = Wei.valueOf(input.readBigIntegerScalar());
+        Address blockRewardPoolAddress = Address.wrap(input.readBytes());
+        long targetMiningTimeMs = input.readLongScalar();
+        long asertHalfLifeBlocks = input.readLongScalar();
+        long asertAnchorHeight = input.readLongScalar();
+        BigInteger minDifficulty = input.readBigIntegerScalar();
+        Wei minTxBaseFee = Wei.valueOf(input.readBigIntegerScalar());
+        Wei minTxByteFee = Wei.valueOf(input.readBigIntegerScalar());
+        Hash updatedByTxHash = Hash.wrap(input.readBytes32());
+        long currentAuthorityCount = input.readLongScalar();
+        long currentValidatorCount = input.readLongScalar();
+        long updatedAtBlockHeight = input.readLongScalar();
+        Instant updatedAtTimestamp = Instant.ofEpochMilli(input.readLongScalar());
+        long validatorMiningWindowBlocks = input.readLongScalar();
+        long currentUnlimitedValidatorCount = input.readLongScalar();
+        List<Long> limitedValidatorMiningSharesBps = input.readList(listInput -> listInput.readLongScalar());
+        long miningRewardVestingBlocks = input.readLongScalar();
+        MiningConsensusRules.validateWindowSize(validatorMiningWindowBlocks);
+        MiningConsensusRules.validateMiningRewardVestingBlocks(miningRewardVestingBlocks);
+        if (currentValidatorCount == 0 && currentUnlimitedValidatorCount != 0) {
+            throw new CryptoJFailedException(
+                    "A zero-validator set requires currentUnlimitedValidatorCount = 0");
+        }
+        if (currentValidatorCount != 0
+                && (currentUnlimitedValidatorCount < 1 || currentUnlimitedValidatorCount > currentValidatorCount)) {
+            throw new CryptoJFailedException(
+                    "A non-empty validator set requires currentUnlimitedValidatorCount in range 1..currentValidatorCount");
+        }
+        if (limitedValidatorMiningSharesBps.size() != currentValidatorCount - currentUnlimitedValidatorCount) {
+            throw new CryptoJFailedException("LIMITED validator policy summary is inconsistent");
+        }
+        long previous = 0;
+        for (long bps : limitedValidatorMiningSharesBps) {
+            MiningConsensusRules.validateLimitedPolicyForWindow(validatorMiningWindowBlocks, bps);
+            if (bps < previous) {
+                throw new CryptoJFailedException("LIMITED validator policy summary must be sorted");
+            }
+            previous = bps;
+        }
+        return NetworkParamsStateImpl.builder()
+                .version(NetworkParamsStateVersion.V2)
+                .blockReward(blockReward)
+                .blockRewardPoolAddress(blockRewardPoolAddress)
+                .targetMiningTimeMs(targetMiningTimeMs)
+                .asertHalfLifeBlocks(asertHalfLifeBlocks)
+                .asertAnchorHeight(asertAnchorHeight)
+                .minDifficulty(minDifficulty)
+                .minTxBaseFee(minTxBaseFee)
+                .minTxByteFee(minTxByteFee)
+                .updatedByTxHash(updatedByTxHash)
+                .currentAuthorityCount(currentAuthorityCount)
+                .currentValidatorCount(currentValidatorCount)
+                .validatorMiningWindowBlocks(validatorMiningWindowBlocks)
+                .currentUnlimitedValidatorCount(currentUnlimitedValidatorCount)
+                .limitedValidatorMiningSharesBps(limitedValidatorMiningSharesBps)
+                .miningRewardVestingBlocks(miningRewardVestingBlocks)
+                .updatedAtBlockHeight(updatedAtBlockHeight)
+                .updatedAtTimestamp(updatedAtTimestamp)
+                .build();
+    }
 }

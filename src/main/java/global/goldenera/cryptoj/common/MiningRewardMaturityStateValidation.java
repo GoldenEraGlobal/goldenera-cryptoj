@@ -21,20 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package global.goldenera.cryptoj.serialization.tx.payload.impl.encoding;
+package global.goldenera.cryptoj.common;
 
-import global.goldenera.cryptoj.common.payloads.bip.TxBipNetworkParamsSetPayload;
-import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncodingStrategy;
-import global.goldenera.rlp.RLPOutput;
+import org.apache.tuweni.units.ethereum.Wei;
 
-public class TxNetworkParamsSetV2EncodingStrategy implements TxPayloadEncodingStrategy<TxBipNetworkParamsSetPayload> {
+import global.goldenera.cryptoj.common.state.MiningRewardMaturityState;
+import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 
-    private final TxNetworkParamsSetEncodingStrategy legacyFields = new TxNetworkParamsSetEncodingStrategy();
+public final class MiningRewardMaturityStateValidation {
 
-    @Override
-    public void encode(RLPOutput out, TxBipNetworkParamsSetPayload payload) {
-        legacyFields.encode(out, payload);
-        out.writeOptionalLongScalar(payload.getValidatorMiningWindowBlocks());
-        out.writeOptionalLongScalar(payload.getMiningRewardVestingBlocks());
-    }
+	private MiningRewardMaturityStateValidation() {
+	}
+
+	public static void validate(MiningRewardMaturityState state) {
+		if (state == null || state.getVersion() == null || state.getRewards() == null) {
+			throw new CryptoJFailedException("Mining reward maturity state, version and rewards cannot be null");
+		}
+		for (var entry : state.getRewards().entrySet()) {
+			Address address = entry.getKey();
+			Wei amount = entry.getValue();
+			if (address == null || amount == null || amount.compareTo(Wei.ZERO) <= 0) {
+				throw new CryptoJFailedException("Mining reward maturities require an address and positive amount");
+			}
+		}
+	}
 }

@@ -43,92 +43,121 @@ import global.goldenera.cryptoj.serialization.tx.payload.TxPayloadEncoder;
 
 class PayloadBuilderVersionTest {
 
-	private static final Address VALIDATOR = Address.fromHexString("0x1111111111111111111111111111111111111111");
+    private static final Address VALIDATOR = Address.fromHexString("0x1111111111111111111111111111111111111111");
 
-	@Test
-	void validatorAddDefaultsToV2AndRequiresPolicy() throws CryptoJException {
-		assertThrows(IllegalStateException.class,
-				() -> TxBuilder.create().addValidator().validator(VALIDATOR).done());
+    @Test
+    void validatorAddDefaultsToV2AndRequiresPolicy() throws CryptoJException {
+        assertThrows(IllegalStateException.class,
+                () -> TxBuilder.create().addValidator().validator(VALIDATOR).done());
 
-		Tx tx = TxBuilder.create()
-				.addValidator()
-				.validator(VALIDATOR)
-				.miningPolicy(MiningLimitMode.LIMITED, 3_000)
-				.done()
-				.network(Network.TESTNET)
-				.nonce(1)
-				.buildUnsigned();
-		TxBipValidatorAddPayload payload = (TxBipValidatorAddPayload) tx.getPayload();
-		assertEquals(TxPayloadVersion.V2, payload.getPayloadVersion());
-		assertEquals(Bytes.fromHexString("0xdb0a0294111111111111111111111111111111111111111180820bb8"),
-				TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
-	}
+        Tx tx = TxBuilder.create()
+                .addValidator()
+                .validator(VALIDATOR)
+                .miningPolicy(MiningLimitMode.LIMITED, 3_000)
+                .done()
+                .network(Network.TESTNET)
+                .nonce(1)
+                .buildUnsigned();
+        TxBipValidatorAddPayload payload = (TxBipValidatorAddPayload) tx.getPayload();
+        assertEquals(TxPayloadVersion.V2, payload.getPayloadVersion());
+        assertEquals(Bytes.fromHexString("0xdb0a0294111111111111111111111111111111111111111180820bb8"),
+                TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+    }
 
-	@Test
-	void validatorAddLegacyV1IsExplicitAndAddressOnly() throws CryptoJException {
-		Tx tx = TxBuilder.create()
-				.addValidator()
-				.validator(VALIDATOR)
-				.legacyV1()
-				.done()
-				.network(Network.TESTNET)
-				.nonce(1)
-				.buildUnsigned();
-		TxBipValidatorAddPayload payload = (TxBipValidatorAddPayload) tx.getPayload();
-		assertEquals(TxPayloadVersion.V1, payload.getPayloadVersion());
-		assertEquals(Bytes.fromHexString("0xd60a941111111111111111111111111111111111111111"),
-				TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+    @Test
+    void validatorAddLegacyV1IsExplicitAndAddressOnly() throws CryptoJException {
+        Tx tx = TxBuilder.create()
+                .addValidator()
+                .validator(VALIDATOR)
+                .legacyV1()
+                .done()
+                .network(Network.TESTNET)
+                .nonce(1)
+                .buildUnsigned();
+        TxBipValidatorAddPayload payload = (TxBipValidatorAddPayload) tx.getPayload();
+        assertEquals(TxPayloadVersion.V1, payload.getPayloadVersion());
+        assertEquals(Bytes.fromHexString("0xd60a941111111111111111111111111111111111111111"),
+                TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
 
-		assertThrows(IllegalStateException.class, () -> TxBuilder.create()
-				.addValidator()
-				.validator(VALIDATOR)
-				.legacyV1()
-				.miningPolicy(MiningLimitMode.UNLIMITED, 0));
-		assertThrows(IllegalStateException.class, () -> TxBuilder.create()
-				.addValidator()
-				.validator(VALIDATOR)
-				.miningPolicy(MiningLimitMode.UNLIMITED, 0)
-				.legacyV1());
-	}
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .addValidator()
+                .validator(VALIDATOR)
+                .legacyV1()
+                .miningPolicy(MiningLimitMode.UNLIMITED, 0));
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .addValidator()
+                .validator(VALIDATOR)
+                .miningPolicy(MiningLimitMode.UNLIMITED, 0)
+                .legacyV1());
+    }
 
-	@Test
-	void networkParamsDefaultsToV2WithoutRequiringResize() throws CryptoJException {
-		Tx tx = TxBuilder.create()
-				.setNetworkParams()
-				.targetMiningTime(1L)
-				.done()
-				.network(Network.TESTNET)
-				.nonce(1)
-				.buildUnsigned();
-		TxBipNetworkParamsSetPayload payload = (TxBipNetworkParamsSetPayload) tx.getPayload();
-		assertEquals(TxPayloadVersion.V2, payload.getPayloadVersion());
-		assertEquals(null, payload.getValidatorMiningWindowBlocks());
-		assertEquals(Bytes.fromHexString("0xcb0402c0c0c101c0c0c0c0c0"),
-				TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
-	}
+    @Test
+    void networkParamsDefaultsToV2WithoutRequiringResize() throws CryptoJException {
+        Tx tx = TxBuilder.create()
+                .setNetworkParams()
+                .targetMiningTime(1L)
+                .done()
+                .network(Network.TESTNET)
+                .nonce(1)
+                .buildUnsigned();
+        TxBipNetworkParamsSetPayload payload = (TxBipNetworkParamsSetPayload) tx.getPayload();
+        assertEquals(TxPayloadVersion.V2, payload.getPayloadVersion());
+        assertEquals(null, payload.getValidatorMiningWindowBlocks());
+        assertEquals(null, payload.getMiningRewardVestingBlocks());
+        assertEquals(Bytes.fromHexString("0xcc0402c0c0c101c0c0c0c0c0c0"),
+                TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+    }
 
-	@Test
-	void networkParamsLegacyV1RequiresExplicitOptInAndRejectsWindow() throws CryptoJException {
-		Tx tx = TxBuilder.create()
-				.setNetworkParams()
-				.targetMiningTime(1L)
-				.legacyV1()
-				.done()
-				.network(Network.TESTNET)
-				.nonce(1)
-				.buildUnsigned();
-		TxBipNetworkParamsSetPayload payload = (TxBipNetworkParamsSetPayload) tx.getPayload();
-		assertEquals(TxPayloadVersion.V1, payload.getPayloadVersion());
-		assertEquals(Bytes.fromHexString("0xc904c0c0c101c0c0c0c0"),
-				TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
+    @Test
+    void networkParamsLegacyV1RequiresExplicitOptInAndRejectsWindow() throws CryptoJException {
+        Tx tx = TxBuilder.create()
+                .setNetworkParams()
+                .targetMiningTime(1L)
+                .legacyV1()
+                .done()
+                .network(Network.TESTNET)
+                .nonce(1)
+                .buildUnsigned();
+        TxBipNetworkParamsSetPayload payload = (TxBipNetworkParamsSetPayload) tx.getPayload();
+        assertEquals(TxPayloadVersion.V1, payload.getPayloadVersion());
+        assertEquals(Bytes.fromHexString("0xc904c0c0c101c0c0c0c0"),
+                TxPayloadEncoder.INSTANCE.encode(payload, TxVersion.V1));
 
-		assertThrows(IllegalStateException.class, () -> TxBuilder.create()
-				.setNetworkParams()
-				.legacyV1()
-				.validatorMiningWindowBlocks(100));
-		assertThrows(IllegalStateException.class, () -> TxBuilder.create()
-				.setNetworkParams()
-				.validatorMiningWindowBlocks(100)
-				.legacyV1());
-	}
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .legacyV1()
+                .validatorMiningWindowBlocks(100));
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .validatorMiningWindowBlocks(100)
+                .legacyV1());
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .legacyV1()
+                .miningRewardVestingBlocks(1));
+        assertThrows(IllegalStateException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .miningRewardVestingBlocks(1)
+                .legacyV1());
+    }
+
+    @Test
+    void networkParamsV2AcceptsCanonicalRewardVestingBounds() throws CryptoJException {
+        Tx tx = TxBuilder.create()
+                .setNetworkParams()
+                .miningRewardVestingBlocks(1_000_000)
+                .done()
+                .network(Network.TESTNET)
+                .nonce(1)
+                .buildUnsigned();
+        TxBipNetworkParamsSetPayload payload = (TxBipNetworkParamsSetPayload) tx.getPayload();
+        assertEquals(1_000_000L, payload.getMiningRewardVestingBlocks());
+
+        assertThrows(RuntimeException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .miningRewardVestingBlocks(-1));
+        assertThrows(RuntimeException.class, () -> TxBuilder.create()
+                .setNetworkParams()
+                .miningRewardVestingBlocks(1_000_001));
+    }
 }

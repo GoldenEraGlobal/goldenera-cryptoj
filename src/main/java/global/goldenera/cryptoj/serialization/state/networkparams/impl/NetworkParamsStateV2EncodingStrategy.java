@@ -35,6 +35,7 @@ public class NetworkParamsStateV2EncodingStrategy implements NetworkParamsStateE
 	@Override
 	public void encode(RLPOutput out, NetworkParamsState state) {
 		MiningConsensusRules.validateWindowSize(state.getValidatorMiningWindowBlocks());
+		MiningConsensusRules.validateMiningRewardVestingBlocks(state.getMiningRewardVestingBlocks());
 		if (state.getCurrentValidatorCount() == 0 && state.getCurrentUnlimitedValidatorCount() != 0) {
 			throw new IllegalArgumentException(
 					"A zero-validator set requires currentUnlimitedValidatorCount = 0");
@@ -61,5 +62,6 @@ public class NetworkParamsStateV2EncodingStrategy implements NetworkParamsStateE
 		out.writeLongScalar(state.getValidatorMiningWindowBlocks());
 		out.writeLongScalar(state.getCurrentUnlimitedValidatorCount());
 		out.writeList(state.getLimitedValidatorMiningSharesBps(), (bps, listOut) -> listOut.writeLongScalar(bps));
+		out.writeLongScalar(state.getMiningRewardVestingBlocks());
 	}
 }
