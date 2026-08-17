@@ -25,7 +25,16 @@ package global.goldenera.cryptoj.common.payloads.bip;
 
 import global.goldenera.cryptoj.common.payloads.TxPayload;
 import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.enums.MiningLimitMode;
 
 public interface TxBipValidatorAddPayload extends TxPayload {
 	Address getAddress();
+
+	default MiningLimitMode getMiningLimitMode() {
+		return null;
+	}
+
+	default Long getMaxMiningShareBps() {
+		return null;
+	}
 }

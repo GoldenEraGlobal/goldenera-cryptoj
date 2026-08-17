@@ -24,12 +24,15 @@
 package global.goldenera.cryptoj.serialization.tx.payload;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.tuweni.bytes.Bytes;
 
 import global.goldenera.cryptoj.common.payloads.TxPayload;
 import global.goldenera.cryptoj.enums.TxPayloadType;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 import global.goldenera.cryptoj.enums.TxVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAddressAliasAddEncodingStrategy;
@@ -38,11 +41,14 @@ import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAuthori
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxAuthorityRemoveEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxBipVoteEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxNetworkParamsSetEncodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxNetworkParamsSetV2EncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenBurnEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenCreateEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenMintEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxTokenUpdateEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorAddEncodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorAddV2EncodingStrategy;
+import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorMiningPolicySetEncodingStrategy;
 import global.goldenera.cryptoj.serialization.tx.payload.impl.encoding.TxValidatorRemoveEncodingStrategy;
 import global.goldenera.rlp.RLP;
 
@@ -50,20 +56,27 @@ public class TxPayloadEncoder {
 
 	public static final TxPayloadEncoder INSTANCE = new TxPayloadEncoder();
 	private final Map<EncoderKey, TxPayloadEncodingStrategy<?>> strategies = new HashMap<>();
+	private final Set<EncoderKey> explicitVersionStrategies = new HashSet<>();
 
 	private TxPayloadEncoder() {
-		register(TxPayloadType.BIP_ADDRESS_ALIAS_ADD, new TxAddressAliasAddEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_ADDRESS_ALIAS_REMOVE, new TxAddressAliasRemoveEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_AUTHORITY_ADD, new TxAuthorityAddEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_AUTHORITY_REMOVE, new TxAuthorityRemoveEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_TOKEN_CREATE, new TxTokenCreateEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_TOKEN_UPDATE, new TxTokenUpdateEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_TOKEN_MINT, new TxTokenMintEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_TOKEN_BURN, new TxTokenBurnEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_NETWORK_PARAMS_SET, new TxNetworkParamsSetEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_VOTE, new TxBipVoteEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_VALIDATOR_ADD, new TxValidatorAddEncodingStrategy(), TxVersion.V1);
-		register(TxPayloadType.BIP_VALIDATOR_REMOVE, new TxValidatorRemoveEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_ADDRESS_ALIAS_ADD, new TxAddressAliasAddEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_ADDRESS_ALIAS_REMOVE, new TxAddressAliasRemoveEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_AUTHORITY_ADD, new TxAuthorityAddEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_AUTHORITY_REMOVE, new TxAuthorityRemoveEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_TOKEN_CREATE, new TxTokenCreateEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_TOKEN_UPDATE, new TxTokenUpdateEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_TOKEN_MINT, new TxTokenMintEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_TOKEN_BURN, new TxTokenBurnEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_NETWORK_PARAMS_SET, new TxNetworkParamsSetEncodingStrategy(), TxVersion.V1);
+		registerExplicit(TxPayloadType.BIP_NETWORK_PARAMS_SET, TxPayloadVersion.V2,
+				new TxNetworkParamsSetV2EncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_VOTE, new TxBipVoteEncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_VALIDATOR_ADD, new TxValidatorAddEncodingStrategy(), TxVersion.V1);
+		registerExplicit(TxPayloadType.BIP_VALIDATOR_ADD, TxPayloadVersion.V2,
+				new TxValidatorAddV2EncodingStrategy(), TxVersion.V1);
+		registerImplicitV1(TxPayloadType.BIP_VALIDATOR_REMOVE, new TxValidatorRemoveEncodingStrategy(), TxVersion.V1);
+		registerExplicit(TxPayloadType.BIP_VALIDATOR_MINING_POLICY_SET, TxPayloadVersion.V1,
+				new TxValidatorMiningPolicySetEncodingStrategy(), TxVersion.V1);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -75,7 +88,10 @@ public class TxPayloadEncoder {
 			throw new CryptoJFailedException("Version cannot be null");
 		}
 
-		EncoderKey key = new EncoderKey(payload.getPayloadType(), version);
+		if (payload.getPayloadVersion() == null) {
+			throw new CryptoJFailedException("Payload version cannot be null");
+		}
+		EncoderKey key = new EncoderKey(payload.getPayloadType(), version, payload.getPayloadVersion());
 		TxPayloadEncodingStrategy<T> strategy = (TxPayloadEncodingStrategy<T>) strategies.get(key);
 
 		if (strategy == null) {
@@ -87,18 +103,30 @@ public class TxPayloadEncoder {
 		return RLP.encode(out -> {
 			out.startList();
 			out.writeIntScalar(payload.getPayloadType().getCode());
+			if (explicitVersionStrategies.contains(key)) {
+				out.writeIntScalar(payload.getPayloadVersion().getCode());
+			}
 			strategy.encode(out, payload);
 			out.endList();
 		});
 	}
 
-	private <T extends TxPayload> void register(TxPayloadType type, TxPayloadEncodingStrategy<?> strategy,
+	private void registerImplicitV1(TxPayloadType type, TxPayloadEncodingStrategy<?> strategy,
 			TxVersion... versions) {
 		for (TxVersion v : versions) {
-			strategies.put(new EncoderKey(type, v), strategy);
+			strategies.put(new EncoderKey(type, v, TxPayloadVersion.V1), strategy);
 		}
 	}
 
-	private record EncoderKey(TxPayloadType type, TxVersion version) {
+	private void registerExplicit(TxPayloadType type, TxPayloadVersion payloadVersion,
+			TxPayloadEncodingStrategy<?> strategy, TxVersion... versions) {
+		for (TxVersion txVersion : versions) {
+			EncoderKey key = new EncoderKey(type, txVersion, payloadVersion);
+			strategies.put(key, strategy);
+			explicitVersionStrategies.add(key);
+		}
+	}
+
+	private record EncoderKey(TxPayloadType type, TxVersion txVersion, TxPayloadVersion payloadVersion) {
 	}
 }

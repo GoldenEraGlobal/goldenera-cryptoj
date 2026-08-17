@@ -24,8 +24,11 @@
 package global.goldenera.cryptoj.builder.payloads;
 
 import global.goldenera.cryptoj.builder.TxBuilder;
+import global.goldenera.cryptoj.common.MiningConsensusRules;
 import global.goldenera.cryptoj.common.payloads.bip.TxBipValidatorAddPayloadImpl;
 import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.enums.MiningLimitMode;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 import global.goldenera.cryptoj.enums.TxType;
 import lombok.NonNull;
 
@@ -51,6 +54,9 @@ public class ValidatorAddBuilder {
 
 	private final TxBuilder parent;
 	private Address validator;
+	private MiningLimitMode miningLimitMode;
+	private Long maxMiningShareBps;
+	private boolean legacyV1;
 
 	public ValidatorAddBuilder(TxBuilder parent) {
 		this.parent = parent;
@@ -67,6 +73,25 @@ public class ValidatorAddBuilder {
 		return this;
 	}
 
+	public ValidatorAddBuilder miningPolicy(@NonNull MiningLimitMode mode, long maxMiningShareBps) {
+		if (legacyV1) {
+			throw new IllegalStateException("Legacy V1 validator add payload cannot contain a mining policy");
+		}
+		MiningConsensusRules.validatePolicy(mode, maxMiningShareBps);
+		this.miningLimitMode = mode;
+		this.maxMiningShareBps = maxMiningShareBps;
+		return this;
+	}
+
+	/** Explicitly opts into the historical, address-only implicit V1 wire format. */
+	public ValidatorAddBuilder legacyV1() {
+		if (miningLimitMode != null || maxMiningShareBps != null) {
+			throw new IllegalStateException("Legacy V1 validator add payload cannot contain a mining policy");
+		}
+		this.legacyV1 = true;
+		return this;
+	}
+
 	/**
 	 * Completes the validator add payload configuration and returns to the parent
 	 * builder.
@@ -74,8 +99,18 @@ public class ValidatorAddBuilder {
 	 * @return parent TxBuilder for continued configuration
 	 */
 	public TxBuilder done() {
+		if (validator == null) {
+			throw new IllegalStateException("Validator address is required");
+		}
+		if (!legacyV1 && (miningLimitMode == null || maxMiningShareBps == null)) {
+			throw new IllegalStateException("Validator add V2 requires an explicit mining policy");
+		}
+		TxPayloadVersion payloadVersion = legacyV1 ? TxPayloadVersion.V1 : TxPayloadVersion.V2;
 		TxBipValidatorAddPayloadImpl payload = TxBipValidatorAddPayloadImpl.builder()
+				.payloadVersion(payloadVersion)
 				.address(validator)
+				.miningLimitMode(miningLimitMode)
+				.maxMiningShareBps(maxMiningShareBps)
 				.build();
 
 		return parent.type(TxType.BIP_CREATE)

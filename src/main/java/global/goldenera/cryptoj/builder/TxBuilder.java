@@ -40,6 +40,7 @@ import global.goldenera.cryptoj.builder.payloads.TokenCreateBuilder;
 import global.goldenera.cryptoj.builder.payloads.TokenMintBuilder;
 import global.goldenera.cryptoj.builder.payloads.TokenUpdateBuilder;
 import global.goldenera.cryptoj.builder.payloads.ValidatorAddBuilder;
+import global.goldenera.cryptoj.builder.payloads.ValidatorMiningPolicySetBuilder;
 import global.goldenera.cryptoj.builder.payloads.ValidatorRemoveBuilder;
 import global.goldenera.cryptoj.common.Tx;
 import global.goldenera.cryptoj.common.TxImpl;
@@ -504,6 +505,11 @@ public class TxBuilder {
 	 */
 	public ValidatorRemoveBuilder removeValidator() {
 		return new ValidatorRemoveBuilder(this);
+	}
+
+	/** Starts building a validator mining-policy governance payload. */
+	public ValidatorMiningPolicySetBuilder setValidatorMiningPolicy() {
+		return new ValidatorMiningPolicySetBuilder(this);
 	}
 
 	/**

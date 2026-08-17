@@ -27,6 +27,7 @@ import java.time.Instant;
 
 import global.goldenera.cryptoj.common.state.ValidatorState;
 import global.goldenera.cryptoj.datatypes.Hash;
+import global.goldenera.cryptoj.enums.MiningLimitMode;
 import global.goldenera.cryptoj.enums.state.ValidatorStateVersion;
 import lombok.Builder;
 import lombok.Value;
@@ -36,7 +37,7 @@ import lombok.Value;
 public class ValidatorStateImpl implements ValidatorState {
 
 	public static final ValidatorState ZERO = ValidatorStateImpl.builder()
-			.version(ValidatorStateVersion.getLatest())
+			.version(ValidatorStateVersion.V1)
 			.createdAtBlockHeight(Long.MIN_VALUE)
 			.createdAtTimestamp(Instant.EPOCH)
 			.originTxHash(Hash.ZERO)
@@ -46,4 +47,34 @@ public class ValidatorStateImpl implements ValidatorState {
 	long createdAtBlockHeight;
 	Instant createdAtTimestamp;
 	Hash originTxHash;
+	MiningLimitMode miningLimitMode;
+	long maxMiningShareBps;
+	Hash policyUpdatedByTxHash;
+	long policyUpdatedAtBlockHeight;
+	Instant policyUpdatedAtTimestamp;
+
+	@Override
+	public MiningLimitMode getMiningLimitMode() {
+		return version == ValidatorStateVersion.V1 ? MiningLimitMode.UNLIMITED : miningLimitMode;
+	}
+
+	@Override
+	public long getMaxMiningShareBps() {
+		return version == ValidatorStateVersion.V1 ? 0 : maxMiningShareBps;
+	}
+
+	@Override
+	public Hash getPolicyUpdatedByTxHash() {
+		return version == ValidatorStateVersion.V1 ? null : policyUpdatedByTxHash;
+	}
+
+	@Override
+	public long getPolicyUpdatedAtBlockHeight() {
+		return version == ValidatorStateVersion.V1 ? Long.MIN_VALUE : policyUpdatedAtBlockHeight;
+	}
+
+	@Override
+	public Instant getPolicyUpdatedAtTimestamp() {
+		return version == ValidatorStateVersion.V1 ? null : policyUpdatedAtTimestamp;
+	}
 }

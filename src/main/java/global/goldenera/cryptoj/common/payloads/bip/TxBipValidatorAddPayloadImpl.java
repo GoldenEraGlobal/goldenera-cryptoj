@@ -26,7 +26,9 @@ package global.goldenera.cryptoj.common.payloads.bip;
 import static lombok.AccessLevel.PRIVATE;
 
 import global.goldenera.cryptoj.datatypes.Address;
+import global.goldenera.cryptoj.enums.MiningLimitMode;
 import global.goldenera.cryptoj.enums.TxPayloadType;
+import global.goldenera.cryptoj.enums.TxPayloadVersion;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -36,7 +38,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = PRIVATE)
 public class TxBipValidatorAddPayloadImpl implements TxBipValidatorAddPayload {
 
+	@Builder.Default
+	TxPayloadVersion payloadVersion = TxPayloadVersion.V1;
 	Address address;
+	MiningLimitMode miningLimitMode;
+	Long maxMiningShareBps;
 
 	@Override
 	public TxPayloadType getPayloadType() {

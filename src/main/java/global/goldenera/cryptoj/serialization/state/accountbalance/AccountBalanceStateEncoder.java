@@ -28,10 +28,12 @@ import java.util.Map;
 
 import org.apache.tuweni.bytes.Bytes;
 
+import global.goldenera.cryptoj.common.AccountBalanceStateValidation;
 import global.goldenera.cryptoj.common.state.AccountBalanceState;
 import global.goldenera.cryptoj.enums.state.AccountBalanceStateVersion;
 import global.goldenera.cryptoj.exceptions.CryptoJFailedException;
 import global.goldenera.cryptoj.serialization.state.accountbalance.impl.AccountBalanceStateV1EncodingStrategy;
+import global.goldenera.cryptoj.serialization.state.accountbalance.impl.AccountBalanceStateV2EncodingStrategy;
 import global.goldenera.rlp.RLP;
 
 public class AccountBalanceStateEncoder {
@@ -42,9 +44,11 @@ public class AccountBalanceStateEncoder {
 
 	private AccountBalanceStateEncoder() {
 		strategies.put(AccountBalanceStateVersion.V1, new AccountBalanceStateV1EncodingStrategy());
+		strategies.put(AccountBalanceStateVersion.V2, new AccountBalanceStateV2EncodingStrategy());
 	}
 
 	public Bytes encode(AccountBalanceState state) {
+		AccountBalanceStateValidation.validate(state);
 		AccountBalanceStateVersion version = state.getVersion();
 		if (version == null) {
 			throw new CryptoJFailedException("AccountBalanceState Version is null");

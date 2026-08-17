@@ -31,15 +31,27 @@ import global.goldenera.cryptoj.enums.state.AccountBalanceStateVersion;
 
 public interface AccountBalanceState {
 
-	AccountBalanceStateVersion getVersion();
+    AccountBalanceStateVersion getVersion();
 
-	Wei getBalance();
+    Wei getBalance();
 
-	long getUpdatedAtBlockHeight();
+    default Wei getLockedMiningReward() {
+        return Wei.ZERO;
+    }
 
-	Instant getUpdatedAtTimestamp();
+    default Wei getPendingMiningRewardCancellation() {
+        return Wei.ZERO;
+    }
 
-	default boolean exists() {
-		return getUpdatedAtBlockHeight() != Long.MIN_VALUE;
-	}
+    default Wei getSpendableBalance() {
+        return getBalance().subtractExact(getLockedMiningReward());
+    }
+
+    long getUpdatedAtBlockHeight();
+
+    Instant getUpdatedAtTimestamp();
+
+    default boolean exists() {
+        return getUpdatedAtBlockHeight() != Long.MIN_VALUE;
+    }
 }

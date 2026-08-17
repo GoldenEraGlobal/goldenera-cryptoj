@@ -26,6 +26,7 @@ package global.goldenera.cryptoj.common.state;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 
 import org.apache.tuweni.bytes.Bytes;
 import org.apache.tuweni.units.ethereum.Wei;
@@ -36,33 +37,53 @@ import global.goldenera.cryptoj.enums.state.NetworkParamsStateVersion;
 
 public interface NetworkParamsState {
 
-	public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
+    public static final Bytes KEY = Bytes.wrap("SINGLETON_PARAMS".getBytes(StandardCharsets.UTF_8));
 
-	NetworkParamsStateVersion getVersion();
+    NetworkParamsStateVersion getVersion();
 
-	Wei getBlockReward();
+    Wei getBlockReward();
 
-	Address getBlockRewardPoolAddress();
+    Address getBlockRewardPoolAddress();
 
-	long getTargetMiningTimeMs();
+    long getTargetMiningTimeMs();
 
-	long getAsertHalfLifeBlocks();
+    long getAsertHalfLifeBlocks();
 
-	long getAsertAnchorHeight();
+    long getAsertAnchorHeight();
 
-	BigInteger getMinDifficulty();
+    BigInteger getMinDifficulty();
 
-	Wei getMinTxBaseFee();
+    Wei getMinTxBaseFee();
 
-	Wei getMinTxByteFee();
+    Wei getMinTxByteFee();
 
-	Hash getUpdatedByTxHash();
+    Hash getUpdatedByTxHash();
 
-	long getCurrentAuthorityCount();
+    long getCurrentAuthorityCount();
 
-	long getCurrentValidatorCount();
+    long getCurrentValidatorCount();
 
-	long getUpdatedAtBlockHeight();
+    /** Legacy V1 states treat every registered validator as UNLIMITED. */
+    default long getCurrentUnlimitedValidatorCount() {
+        return getCurrentValidatorCount();
+    }
 
-	Instant getUpdatedAtTimestamp();
+    /** Zero means this parameter is absent from a legacy V1 state. */
+    default long getValidatorMiningWindowBlocks() {
+        return 0;
+    }
+
+    /** Zero means mining rewards are immediately spendable. */
+    default long getMiningRewardVestingBlocks() {
+        return 0;
+    }
+
+    /** Sorted multiset of BPS values for all active LIMITED validators. */
+    default List<Long> getLimitedValidatorMiningSharesBps() {
+        return List.of();
+    }
+
+    long getUpdatedAtBlockHeight();
+
+    Instant getUpdatedAtTimestamp();
 }

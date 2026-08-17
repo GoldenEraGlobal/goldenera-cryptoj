@@ -37,7 +37,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 public enum NetworkParamsStateVersion {
-	V1(1);
+	V1(1),
+	V2(2);
 
 	int code;
 
