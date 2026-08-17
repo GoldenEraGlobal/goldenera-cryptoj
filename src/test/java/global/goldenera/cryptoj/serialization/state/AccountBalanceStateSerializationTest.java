@@ -194,6 +194,9 @@ class AccountBalanceStateSerializationTest {
 				.updatedAtTimestamp(TIME)
 				.build();
 		assertThrows(CryptoJFailedException.class, () -> AccountBalanceStateEncoder.INSTANCE.encode(invalid));
+		assertThrows(CryptoJFailedException.class,
+				() -> AccountBalanceStateDecoder.INSTANCE.decode(
+						Bytes.fromHexString("0xc8020a05c38203e804")));
 		assertThrows(RuntimeException.class,
 				() -> AccountBalanceStateDecoder.INSTANCE.decode(Bytes.fromHexString("0xc502030104")));
 	}

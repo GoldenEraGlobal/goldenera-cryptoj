@@ -57,7 +57,7 @@ public class AccountBalanceStateImpl implements AccountBalanceState {
     Wei balance;
     Wei lockedMiningReward;
     @Builder.Default
-    Wei pendingMiningRewardCancellation;
+    Wei pendingMiningRewardCancellation = Wei.ZERO;
     long updatedAtBlockHeight;
     Instant updatedAtTimestamp;
 
